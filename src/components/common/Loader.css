@@ -1,0 +1,131 @@
+/* src/components/common/Loader.css */
+
+.loader-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-6);
+  }
+  
+  .loader {
+    display: inline-block;
+    position: relative;
+  }
+  
+  .loader div {
+    position: absolute;
+    border-radius: 50%;
+    animation: loader-animation 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  }
+  
+  .loader div:nth-child(1) {
+    animation-delay: -0.45s;
+  }
+  
+  .loader div:nth-child(2) {
+    animation-delay: -0.3s;
+  }
+  
+  .loader div:nth-child(3) {
+    animation-delay: -0.15s;
+  }
+  
+  /* Small loader */
+  .loader-small {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .loader-small div {
+    width: 6px;
+    height: 6px;
+  }
+  
+  /* Medium loader */
+  .loader-medium {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .loader-medium div {
+    width: 8px;
+    height: 8px;
+  }
+  
+  /* Large loader */
+  .loader-large {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .loader-large div {
+    width: 12px;
+    height: 12px;
+  }
+  
+  /* Loader colors */
+  .loader-primary div {
+    background-color: var(--color-primary);
+  }
+  
+  .loader-secondary div {
+    background-color: var(--color-secondary);
+  }
+  
+  .loader-success div {
+    background-color: var(--color-success);
+  }
+  
+  .loader-error div {
+    background-color: var(--color-error);
+  }
+  
+  .loader-white div {
+    background-color: white;
+  }
+  
+  /* Loader text */
+  .loader-text {
+    margin-top: var(--space-4);
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+  }
+  
+  /* Fullscreen loader */
+  .loader-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* Animation */
+  @keyframes loader-animation {
+    0% {
+      top: 0;
+      left: 50%;
+    }
+    25% {
+      top: 50%;
+      left: 100%;
+    }
+    50% {
+      top: 100%;
+      left: 50%;
+    }
+    75% {
+      top: 50%;
+      left: 0;
+    }
+    100% {
+      top: 0;
+      left: 50%;
+    }
+  }

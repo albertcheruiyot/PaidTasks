@@ -1,0 +1,92 @@
+/* src/pages/tasks/survey/SurveyTasks.css */
+
+.survey-tasks-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-bottom: var(--space-8);
+  }
+  
+  .survey-task-card {
+    background-color: var(--color-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  @media (min-width: 768px) {
+    .survey-task-card {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+  
+  .survey-task-content {
+    flex: 1;
+  }
+  
+  .survey-task-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: var(--space-2);
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  
+  .survey-badge {
+    background-color: var(--color-background);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-md);
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+  }
+  
+  .survey-task-content h3 {
+    margin-bottom: 0;
+  }
+  
+  .survey-task-content p {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-3);
+  }
+  
+  .survey-task-details {
+    display: flex;
+    gap: var(--space-4);
+    margin-bottom: var(--space-3);
+  }
+  
+  .survey-detail {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .detail-label {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+  }
+  
+  .detail-value {
+    font-weight: var(--font-weight-medium);
+  }
+  
+  .reward-amount {
+    color: var(--color-success);
+    font-weight: var(--font-weight-bold);
+  }
+  
+  .survey-task-action {
+    margin-top: var(--space-3);
+  }
+  
+  @media (min-width: 768px) {
+    .survey-task-action {
+      margin-top: 0;
+      margin-left: var(--space-4);
+    }
+  }
+  
+  /* Inherit other styles from VideoTasks.css to maintain consistency */

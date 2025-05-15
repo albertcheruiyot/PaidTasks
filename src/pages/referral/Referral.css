@@ -1,0 +1,241 @@
+/* src/pages/referral/Referral.css */
+
+.referral-header {
+    margin-bottom: var(--space-6);
+  }
+  
+  .referral-header h1 {
+    margin-bottom: var(--space-2);
+  }
+  
+  .referral-stats-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    margin-bottom: var(--space-8);
+  }
+  
+  @media (min-width: 768px) {
+    .referral-stats-container {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  .referral-stat-card {
+    background-color: var(--color-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  
+  .referral-stat-icon {
+    font-size: 2rem;
+    background-color: var(--color-background);
+    width: 50px;
+    height: 50px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .referral-stat-content {
+    flex: 1;
+  }
+  
+  .referral-stat-content h3 {
+    font-size: 1rem;
+    margin-bottom: var(--space-1);
+    color: var(--color-text-secondary);
+  }
+  
+  .referral-stat-value {
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-bold);
+    margin-bottom: 0;
+  }
+  
+  .referral-link-section {
+    background-color: var(--color-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .referral-link-section h2 {
+    margin-bottom: var(--space-4);
+  }
+  
+  .referral-link-container {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+  
+  .referral-link-input {
+    flex: 1;
+    padding: var(--space-3);
+    border: 1px solid var(--color-text-light);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    background-color: var(--color-background);
+  }
+  
+  .referral-code {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+  }
+  
+  .share-section {
+    background-color: var(--color-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .share-section h2 {
+    margin-bottom: var(--space-4);
+  }
+  
+  .share-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  
+  .btn-whatsapp {
+    background-color: #25D366;
+    color: white;
+  }
+  
+  .btn-facebook {
+    background-color: #1877F2;
+    color: white;
+  }
+  
+  .btn-twitter {
+    background-color: #1DA1F2;
+    color: white;
+  }
+  
+  .referrals-list-section {
+    background-color: var(--color-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .referrals-list-section h2 {
+    margin-bottom: var(--space-4);
+  }
+  
+  .referrals-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    padding: var(--space-3);
+    font-weight: var(--font-weight-bold);
+    border-bottom: 1px solid var(--color-background);
+    color: var(--color-text-secondary);
+  }
+  
+  .referral-item {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    padding: var(--space-3);
+    border-bottom: 1px solid var(--color-background);
+    align-items: center;
+  }
+  
+  .referral-item:last-child {
+    border-bottom: none;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+  }
+  
+  .status-badge.active {
+    background-color: var(--color-success);
+    color: white;
+  }
+  
+  .status-badge.pending {
+    background-color: var(--color-warning);
+    color: white;
+  }
+  
+  .no-referrals {
+    background-color: var(--color-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    text-align: center;
+    margin-bottom: var(--space-6);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .no-referrals h2 {
+    margin-bottom: var(--space-2);
+  }
+  
+  .no-referrals p {
+    color: var(--color-text-secondary);
+  }
+  
+  .referral-note {
+    background-color: var(--color-background);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    margin-bottom: var(--space-8);
+  }
+  
+  .referral-note h3 {
+    margin-bottom: var(--space-2);
+    font-size: 1.25rem;
+  }
+  
+  .referral-note ul {
+    padding-left: var(--space-6);
+  }
+  
+  .referral-note li {
+    margin-bottom: var(--space-2);
+    color: var(--color-text-secondary);
+  }
+  
+  @media (max-width: 768px) {
+    .referrals-header {
+      display: none;
+    }
+    
+    .referral-item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      padding: var(--space-4);
+    }
+    
+    .referral-name {
+      font-weight: var(--font-weight-bold);
+      font-size: 1.1rem;
+    }
+    
+    .referral-date::before {
+      content: 'Joined: ';
+      color: var(--color-text-secondary);
+    }
+    
+    .referral-reward::before {
+      content: 'Reward: ';
+      color: var(--color-text-secondary);
+    }
+  }

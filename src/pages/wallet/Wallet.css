@@ -1,0 +1,212 @@
+/* src/pages/wallet/Wallet.css */
+
+.wallet-header {
+    margin-bottom: var(--space-6);
+  }
+  
+  .wallet-header h1 {
+    margin-bottom: var(--space-2);
+  }
+  
+  .wallet-stats-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+  
+  @media (min-width: 768px) {
+    .wallet-stats-container {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  .wallet-stat-card {
+    background-color: var(--color-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  
+  .wallet-stat-icon {
+    font-size: 2rem;
+    background-color: var(--color-background);
+    width: 50px;
+    height: 50px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .wallet-stat-content {
+    flex: 1;
+  }
+  
+  .wallet-stat-content h3 {
+    font-size: 1rem;
+    margin-bottom: var(--space-1);
+    color: var(--color-text-secondary);
+  }
+  
+  .wallet-stat-value {
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-bold);
+    margin-bottom: 0;
+  }
+  
+  .withdrawal-section {
+    background-color: var(--color-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .withdrawal-section h2 {
+    margin-bottom: var(--space-4);
+  }
+  
+  .withdrawal-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  
+  .success-message {
+    background-color: var(--color-success);
+    color: white;
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-4);
+  }
+  
+  .no-balance {
+    background-color: var(--color-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    text-align: center;
+    margin-bottom: var(--space-6);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .no-balance h2 {
+    margin-bottom: var(--space-2);
+  }
+  
+  .no-balance p {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-4);
+  }
+  
+  .withdrawal-history {
+    background-color: var(--color-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .withdrawal-history h2 {
+    margin-bottom: var(--space-4);
+  }
+  
+  .no-history {
+    text-align: center;
+    color: var(--color-text-secondary);
+  }
+  
+  .history-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    padding: var(--space-3);
+    font-weight: var(--font-weight-bold);
+    border-bottom: 1px solid var(--color-background);
+    color: var(--color-text-secondary);
+  }
+  
+  .history-item {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    padding: var(--space-3);
+    border-bottom: 1px solid var(--color-background);
+    align-items: center;
+  }
+  
+  .history-item:last-child {
+    border-bottom: none;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+    text-transform: capitalize;
+  }
+  
+  .status-completed {
+    background-color: var(--color-success);
+    color: white;
+  }
+  
+  .status-rejected {
+    background-color: var(--color-error);
+    color: white;
+  }
+  
+  .status-pending {
+    background-color: var(--color-warning);
+    color: white;
+  }
+  
+  .wallet-note {
+    background-color: var(--color-background);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    margin-bottom: var(--space-8);
+  }
+  
+  .wallet-note h3 {
+    margin-bottom: var(--space-2);
+    font-size: 1.25rem;
+  }
+  
+  .wallet-note ul {
+    padding-left: var(--space-6);
+  }
+  
+  .wallet-note li {
+    margin-bottom: var(--space-2);
+    color: var(--color-text-secondary);
+  }
+  
+  @media (max-width: 768px) {
+    .history-header {
+      display: none;
+    }
+    
+    .history-item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      padding: var(--space-4);
+    }
+    
+    .history-date {
+      font-weight: var(--font-weight-bold);
+    }
+    
+    .history-amount {
+      font-size: 1.1rem;
+    }
+    
+    .history-method::before {
+      content: 'M-Pesa: ';
+      color: var(--color-text-secondary);
+    }
+  }
