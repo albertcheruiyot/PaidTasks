@@ -1,10 +1,9 @@
-// src/App.js - Modified version with GlobalNotification
+// src/App.js - Fixed version
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 // We're not using NotificationContext anymore to avoid circular dependency
-// import { NotificationProvider } from './context/NotificationContext';
 
 // Import CSS
 import './styles/global.css';
@@ -29,7 +28,7 @@ import NotFoundPage from './pages/NotFoundPage';
 
 // Auth Guard component for protected routes
 const ProtectedRoute = ({ children }) => {
-  const { currentUser, loading } = React.useContext(AuthProvider);
+  const { currentUser, loading } = useAuth();
   
   if (loading) {
     return <div className="loading-container">Loading...</div>;

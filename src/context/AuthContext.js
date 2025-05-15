@@ -1,6 +1,6 @@
-// src/context/AuthContext.js
+// src/context/AuthContext.js - Fixed version to prevent excessive Firestore reads
 
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useRef } from 'react';
 import { 
   onAuthStateChanged,
   getAdditionalUserInfo
@@ -13,7 +13,7 @@ import {
   loginWithEmail,
   resetPassword,
   logout as firebaseLogout,
-  getUserData,
+  getUserData as firebaseGetUserData,
   activateUserAccount,
   getUserReferrals
 } from '../services/firebase/authService';
@@ -31,6 +31,11 @@ export const AuthProvider = ({ children }) => {
   // Simple notification state - we'll use this instead of NotificationContext
   // to avoid circular dependencies
   const [notification, setNotification] = useState(null);
+  
+  // Add a timestamp to track when userData was last refreshed to prevent excessive reads
+  const lastUserDataRefresh = useRef(0);
+  // Add a flag to prevent recursive calls
+  const isRefreshingUserData = useRef(false);
 
   // Register a new user with email and password
   const register = async (email, password, fullName, referralCode = null) => {
@@ -170,8 +175,7 @@ export const AuthProvider = ({ children }) => {
       
       if (success) {
         // Update local user data
-        const updatedUserData = await getUserData(currentUser.uid);
-        setUserData(updatedUserData);
+        await refreshUserData();
         
         showNotification({ type: 'success', message: 'Your account has been activated!' });
       }
@@ -226,6 +230,39 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Modified refreshUserData to prevent excessive Firestore reads
+  const refreshUserData = async () => {
+    // Only proceed if we have a current user and we're not already refreshing
+    if (!currentUser || isRefreshingUserData.current) return userData;
+    
+    // Check if we refreshed recently (within the last 2 seconds)
+    const now = Date.now();
+    if (now - lastUserDataRefresh.current < 2000) {
+      return userData; // Return current data if we refreshed recently
+    }
+    
+    try {
+      isRefreshingUserData.current = true;
+      
+      // Only make one Firestore call
+      const userDocRef = doc(db, 'users', currentUser.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        const freshUserData = userDoc.data();
+        setUserData(freshUserData);
+        lastUserDataRefresh.current = now;
+        return freshUserData;
+      }
+      return null;
+    } catch (error) {
+      console.error("Error refreshing user data:", error);
+      return null;
+    } finally {
+      isRefreshingUserData.current = false;
+    }
+  };
+
   // Listen for auth state changes and fetch user data
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -233,15 +270,23 @@ export const AuthProvider = ({ children }) => {
       
       if (user) {
         try {
-          // Get user data from Firestore
-          const userData = await getUserData(user.uid);
-          setUserData(userData);
+          // Make a single call to get initial user data
+          const userDocRef = doc(db, 'users', user.uid);
+          const userDoc = await getDoc(userDocRef);
+          
+          if (userDoc.exists()) {
+            setUserData(userDoc.data());
+            lastUserDataRefresh.current = Date.now();
+          }
           
           // Update last active timestamp
           updateLastActive();
         } catch (error) {
           console.error("Error fetching user data:", error);
         }
+      } else {
+        // Reset user data when logged out
+        setUserData(null);
       }
       
       setLoading(false);
@@ -250,21 +295,6 @@ export const AuthProvider = ({ children }) => {
     // Cleanup subscription on unmount
     return unsubscribe;
   }, []);
-
-  // Refresh user data when needed
-  const refreshUserData = async () => {
-    if (currentUser) {
-      try {
-        const freshUserData = await getUserData(currentUser.uid);
-        setUserData(freshUserData);
-        return freshUserData;
-      } catch (error) {
-        console.error("Error refreshing user data:", error);
-        return null;
-      }
-    }
-    return null;
-  };
 
   // Context value
   const value = {
