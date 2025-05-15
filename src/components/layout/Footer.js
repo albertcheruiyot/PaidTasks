@@ -3,16 +3,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Footer.css';
+import PwaInstallModal from './PwaInstallModal'; // We'll create this component
 
 const Footer = () => {
-  const [email, setEmail] = useState('');
-  
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // In a real implementation, you would handle the newsletter subscription here
-    alert(`Thank you for subscribing with: ${email}`);
-    setEmail('');
-  };
+  const currentYear = new Date().getFullYear();
+  const [showInstallModal, setShowInstallModal] = useState(false);
   
   return (
     <footer className="footer">
@@ -25,7 +20,7 @@ const Footer = () => {
       <div className="footer-coin footer-coin-3">💵</div>
       
       <div className="footer-content">
-        <div className="footer-section">
+        <div className="footer-primary">
           <Link to="/" className="footer-logo">
             <span className="footer-logo-icon">💸</span>
             PaidTasks
@@ -34,6 +29,7 @@ const Footer = () => {
             PaidTasks is your gateway to earning real money through simple online tasks. 
             Complete surveys, watch videos, and refer friends to boost your income in your spare time.
           </p>
+          
           <div className="social-links">
             <a href="#" className="social-link" aria-label="Facebook">
               <i className="fab fa-facebook-f"></i>
@@ -50,72 +46,55 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="footer-section">
-          <h4 className="footer-heading">Quick Links</h4>
-          <div className="footer-links">
-            <Link to="/dashboard" className="footer-link">Dashboard</Link>
-            <Link to="/tasks/videos" className="footer-link">Video Tasks</Link>
-            <Link to="/tasks/surveys" className="footer-link">Survey Tasks</Link>
-            <Link to="/referrals" className="footer-link">Referral Program</Link>
-            <Link to="/wallet" className="footer-link">Wallet & Payments</Link>
+        <div className="footer-secondary">
+          <div className="footer-nav">
+            <h4 className="footer-heading">Quick Links</h4>
+            <div className="footer-links">
+              <Link to="/dashboard" className="footer-link">Dashboard</Link>
+              <Link to="/tasks/videos" className="footer-link">Video Tasks</Link>
+              <Link to="/tasks/surveys" className="footer-link">Survey Tasks</Link>
+              <Link to="/referrals" className="footer-link">Referral Program</Link>
+              <Link to="/wallet" className="footer-link">Wallet & Payments</Link>
+            </div>
           </div>
-        </div>
-        
-        <div className="footer-section">
-          <h4 className="footer-heading">Help & Support</h4>
-          <div className="footer-links">
-            <Link to="/faq" className="footer-link">FAQ</Link>
-            <Link to="/contact" className="footer-link">Contact Us</Link>
-            <Link to="/help" className="footer-link">Help Center</Link>
-            <Link to="/privacy" className="footer-link">Privacy Policy</Link>
-            <Link to="/terms" className="footer-link">Terms of Service</Link>
-          </div>
-        </div>
-        
-        <div className="footer-section">
-          <h4 className="footer-heading">Stay Updated</h4>
-          <p className="footer-text">
-            Subscribe to our newsletter for the latest tasks and highest paying opportunities.
-          </p>
-          <form className="newsletter-form" onSubmit={handleSubmit}>
-            <input 
-              type="email" 
-              className="newsletter-input" 
-              placeholder="Your email address" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <button type="submit" className="newsletter-button">
-              Subscribe
-            </button>
-          </form>
           
-          <h4 className="footer-heading" style={{ marginTop: '2rem' }}>Get the App</h4>
-          <div className="app-badges">
-            <Link to="/register" className="app-badge">
-              <span className="app-badge-icon">📱</span>
-              <span>
-                <small>Available on</small><br />
-                <strong>iOS & Android</strong>
-              </span>
-            </Link>
+          <div className="footer-app">
+            <h4 className="footer-heading">Get the App</h4>
+            <div className="app-badges">
+              {/* Changed to button instead of Link to open instructions modal */}
+              <button 
+                className="app-badge" 
+                onClick={() => setShowInstallModal(true)}
+                aria-label="Install PaidTasks app"
+              >
+                <span className="app-badge-icon">📱</span>
+                <span className="app-badge-text">
+                  <small>Available as</small>
+                  <strong>PWA on iOS & Android</strong>
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
       
       <div className="bottom-bar">
         <p className="copyright">
-          &copy; {new Date().getFullYear()} PaidTasks. All rights reserved.
+          &copy; {currentYear} PaidTasks. All rights reserved.
         </p>
         
         <div className="footer-bottom-links">
           <a href="#" className="footer-bottom-link">Privacy</a>
           <a href="#" className="footer-bottom-link">Terms</a>
-          <a href="#" className="footer-bottom-link">Cookies</a>
-          <a href="#" className="footer-bottom-link">Security</a>
+          <a href="#" className="footer-bottom-link">Contact</a>
+          <a href="#" className="footer-bottom-link">Help</a>
         </div>
       </div>
+      
+      {/* PWA Installation Modal */}
+      {showInstallModal && (
+        <PwaInstallModal onClose={() => setShowInstallModal(false)} />
+      )}
     </footer>
   );
 };

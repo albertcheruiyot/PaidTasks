@@ -1,69 +1,89 @@
 // src/pages/wallet/Wallet.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   doc, 
   getDoc, 
   updateDoc, 
   collection, 
   addDoc, 
+  getDocs, 
   query, 
   where, 
   orderBy, 
-  getDocs, 
-  serverTimestamp 
+  limit,
+  serverTimestamp,
+  writeBatch,
+  increment
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { useAuth } from '../../context/AuthContext';
+import AccountActivationModal from './components/AccountActivationModal';
+import ReferralShareModal from './components/ReferralShareModal';
+import MinimumBalanceModal from './components/MinimumBalanceModal';
+import WithdrawalForm from './components/WithdrawalForm';
+import WithdrawalHistory from './components/WithdrawalHistory';
 import './Wallet.css';
 
+// Helper to log Firestore operations
+const logFirestoreOperation = (operation, path, data = null) => {
+  console.log(`Firestore ${operation}:`, path, data ? data : '');
+};
+
 const Wallet = () => {
-  const { currentUser } = useAuth();
-  const [userData, setUserData] = useState(null);
+  const { currentUser, userData, refreshUserData, showNotification } = useAuth();
   const [withdrawalHistory, setWithdrawalHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Form states
-  const [amount, setAmount] = useState('');
-  const [mpesaNumber, setMpesaNumber] = useState('');
-  const [mpesaName, setMpesaName] = useState('');
-  const [withdrawalLoading, setWithdrawalLoading] = useState(false);
-  const [withdrawalError, setWithdrawalError] = useState(null);
-  const [withdrawalSuccess, setWithdrawalSuccess] = useState(false);
+  // Modal states
+  const [showActivationModal, setShowActivationModal] = useState(false);
+  const [showReferralModal, setShowReferralModal] = useState(false);
+  const [showMinBalanceModal, setShowMinBalanceModal] = useState(false);
+  const [showWithdrawalForm, setShowWithdrawalForm] = useState(false);
   
+  // Withdrawal thresholds
+  const MIN_TRANSACTION_AMOUNT = 50; // Minimum per transaction
+  const MIN_WITHDRAWAL_AMOUNT = 10000; // Minimum balance required (hidden requirement)
+  const REQUIRED_REFERRALS = 10; // Required number of activated referrals
+  
+  // Track if we've already fetched history to prevent redundant Firestore reads
+  const historyFetchedRef = useRef(false);
+  
+  // Load wallet data - optimized to minimize reads
   useEffect(() => {
-    const fetchUserAndWithdrawals = async () => {
+    const fetchWalletData = async () => {
       try {
-        if (currentUser) {
-          // Fetch user data
-          const userDocRef = doc(db, 'users', currentUser.uid);
-          const userDocSnap = await getDoc(userDocRef);
+        if (!currentUser || !userData) {
+          setLoading(false);
+          return;
+        }
+        
+        // Only fetch withdrawal history if we haven't already and we have a small withdrawal history
+        if (!historyFetchedRef.current && withdrawalHistory.length === 0) {
+          // Query only last 10 withdrawals to reduce data transfer
+          const withdrawalsRef = collection(db, `users/${currentUser.uid}/withdrawals`);
           
-          if (userDocSnap.exists()) {
-            setUserData(userDocSnap.data());
-            
-            // Fetch withdrawal history from subcollection
-            const withdrawalsRef = collection(db, `users/${currentUser.uid}/withdrawals`);
-            const q = query(
-              withdrawalsRef,
-              orderBy('createdAt', 'desc')
-            );
-            
-            const querySnapshot = await getDocs(q);
-            const history = [];
-            
-            querySnapshot.forEach((doc) => {
-              history.push({
-                id: doc.id,
-                ...doc.data()
-              });
+          logFirestoreOperation('READ (query)', `users/${currentUser.uid}/withdrawals`, 'Fetching last 10 withdrawals');
+          
+          const q = query(
+            withdrawalsRef,
+            orderBy('createdAt', 'desc'),
+            limit(10)
+          );
+          
+          const querySnapshot = await getDocs(q);
+          const history = [];
+          
+          querySnapshot.forEach((doc) => {
+            history.push({
+              id: doc.id,
+              ...doc.data()
             });
-            
-            setWithdrawalHistory(history);
-          } else {
-            setError('User data not found');
-          }
+          });
+          
+          setWithdrawalHistory(history);
+          historyFetchedRef.current = true;
         }
       } catch (err) {
         console.error('Error fetching wallet data:', err);
@@ -73,128 +93,151 @@ const Wallet = () => {
       }
     };
     
-    fetchUserAndWithdrawals();
-  }, [currentUser]);
+    fetchWalletData();
+  }, [currentUser, userData]);
   
-  const validateWithdrawalForm = () => {
-    // Reset errors first
-    setWithdrawalError(null);
-    
-    // Check if all fields are filled
-    if (!amount || !mpesaNumber || !mpesaName) {
-      setWithdrawalError('Please fill in all fields');
-      return false;
-    }
-    
-    // Validate amount
-    const amountValue = parseFloat(amount);
-    
-    if (isNaN(amountValue) || amountValue <= 0) {
-      setWithdrawalError('Please enter a valid amount');
-      return false;
-    }
-    
-    // Check if amount is greater than available balance
-    if (amountValue > userData.availableBalance) {
-      setWithdrawalError('Withdrawal amount exceeds your available balance');
-      return false;
-    }
-    
-    // Check minimum withdrawal amount (50 KSh)
-    if (amountValue < 50) {
-      setWithdrawalError('Minimum withdrawal amount is KSh 50');
-      return false;
-    }
-    
-    // Validate M-Pesa number (simple Kenyan format check)
-    const mpesaRegex = /^(?:254|\+254|0)([7-9][0-9]{8})$/;
-    if (!mpesaRegex.test(mpesaNumber)) {
-      setWithdrawalError('Please enter a valid M-Pesa number format (e.g., 0712345678)');
-      return false;
-    }
-    
-    return true;
-  };
-  
-  const handleWithdrawal = async (e) => {
-    e.preventDefault();
-    
-    if (!validateWithdrawalForm()) {
+  // Handle withdrawal button click
+  const handleWithdrawalClick = () => {
+    // Step 1: Check account activation
+    if (!userData.isAccountActivated) {
+      setShowActivationModal(true);
       return;
     }
     
+    // Step 2: Check if user has enough activated referrals
+    if (userData?.referralStats?.activatedReferrals < REQUIRED_REFERRALS) {
+      setShowReferralModal(true);
+      return;
+    }
+    
+    // Step 3 (Hidden until now): Check for minimum balance
+    if (userData?.availableBalance < MIN_WITHDRAWAL_AMOUNT) {
+      setShowMinBalanceModal(true);
+      return;
+    }
+    
+    // All requirements met, show withdrawal form
+    setShowWithdrawalForm(true);
+  };
+  
+  // Handle account activation
+  const handleActivateAccount = async () => {
     try {
-      setWithdrawalLoading(true);
-      setWithdrawalError(null);
-      setWithdrawalSuccess(false);
+      setLoading(true);
       
-      const amountValue = parseFloat(amount);
+      // Call the activation function that handles all the logic
+      // Including rewarding referrer if applicable
+      const success = await activateUserAccount(currentUser.uid);
       
-      // 1. Add withdrawal request to user's withdrawals subcollection
-      const withdrawalData = {
-        amount: amountValue,
-        mpesaNumber,
-        mpesaName,
-        status: 'pending',
-        createdAt: serverTimestamp(),
-        processedAt: null
-      };
-      
-      const withdrawalsRef = collection(db, `users/${currentUser.uid}/withdrawals`);
-      await addDoc(withdrawalsRef, withdrawalData);
-      
-      // 2. Update user's balance
-      const userDocRef = doc(db, 'users', currentUser.uid);
-      await updateDoc(userDocRef, {
-        availableBalance: userData.availableBalance - amountValue,
-        totalWithdrawn: userData.totalWithdrawn + amountValue
-      });
-      
-      // 3. Update local state
-      setUserData({
-        ...userData,
-        availableBalance: userData.availableBalance - amountValue,
-        totalWithdrawn: userData.totalWithdrawn + amountValue
-      });
-      
-      // Add to local withdrawal history
-      setWithdrawalHistory([
-        {
-          id: 'temp-id',
-          ...withdrawalData,
-          createdAt: { seconds: Date.now() / 1000 } // Temporary timestamp format
-        },
-        ...withdrawalHistory
-      ]);
-      
-      // Reset form
-      setAmount('');
-      setMpesaNumber('');
-      setMpesaName('');
-      setWithdrawalSuccess(true);
-      
-      // Clear success message after 5 seconds
-      setTimeout(() => {
-        setWithdrawalSuccess(false);
-      }, 5000);
-      
+      if (success) {
+        // Update local state to reflect changes
+        await refreshUserData();
+        
+        showNotification({ 
+          type: 'success', 
+          message: 'Your account has been activated successfully!' 
+        });
+        
+        // Close the modal
+        setShowActivationModal(false);
+        
+        // Next, check referrals
+        if (userData?.referralStats?.activatedReferrals < REQUIRED_REFERRALS) {
+          setShowReferralModal(true);
+        } else if (userData?.availableBalance < MIN_WITHDRAWAL_AMOUNT) {
+          // Only show balance requirement after referrals are met
+          setShowMinBalanceModal(true);
+        } else {
+          setShowWithdrawalForm(true);
+        }
+      } else {
+        throw new Error("Account activation failed");
+      }
     } catch (err) {
-      console.error('Error processing withdrawal:', err);
-      setWithdrawalError('Failed to process withdrawal. Please try again.');
+      console.error('Error activating account:', err);
+      showNotification({ 
+        type: 'error', 
+        message: 'Failed to activate account. Please try again.' 
+      });
     } finally {
-      setWithdrawalLoading(false);
+      setLoading(false);
     }
   };
   
-  const getStatusClass = (status) => {
-    switch (status) {
-      case 'completed':
-        return 'status-completed';
-      case 'rejected':
-        return 'status-rejected';
-      default:
-        return 'status-pending';
+  // Account activation logic - optimized to use a batch write
+  const activateUserAccount = async (uid) => {
+    try {
+      // Use a batch for all operations to ensure atomicity and reduce write operations
+      const batch = writeBatch(db);
+      
+      // Update user document
+      const userRef = doc(db, 'users', uid);
+      
+      logFirestoreOperation('BATCH WRITE', `users/${uid}`, {
+        isAccountActivated: true,
+        accountActivatedAt: 'serverTimestamp()'
+      });
+      
+      batch.update(userRef, {
+        isAccountActivated: true,
+        accountActivatedAt: serverTimestamp()
+      });
+      
+      // If user was referred, reward the referrer
+      if (userData.referredBy) {
+        const referrerUid = userData.referredBy;
+        const referralReward = 200; // KSh 200 reward
+        
+        // Update referrer document
+        const referrerRef = doc(db, 'users', referrerUid);
+        
+        logFirestoreOperation('BATCH WRITE', `users/${referrerUid}`, {
+          'referralStats.activatedReferrals': 'increment(1)',
+          availableBalance: `increment(${referralReward})`,
+          totalEarnings: `increment(${referralReward})`
+        });
+        
+        batch.update(referrerRef, {
+          'referralStats.activatedReferrals': increment(1),
+          availableBalance: increment(referralReward),
+          totalEarnings: increment(referralReward)
+        });
+        
+        // Update referral record in subcollection
+        const referralRef = doc(db, 'users', referrerUid, 'referrals', uid);
+        
+        logFirestoreOperation('BATCH WRITE', `users/${referrerUid}/referrals/${uid}`, {
+          activated: true,
+          activatedAt: 'serverTimestamp()',
+          reward: referralReward
+        });
+        
+        batch.update(referralRef, {
+          activated: true,
+          activatedAt: serverTimestamp(),
+          reward: referralReward
+        });
+      }
+      
+      // Commit the batch - uses only 1 write operation for multiple documents
+      logFirestoreOperation('BATCH COMMIT', 'Multiple documents', 'Committing batch write');
+      await batch.commit();
+      
+      return true;
+    } catch (error) {
+      console.error("Error activating account:", error);
+      return false;
     }
+  };
+  
+  // Formatter for currency display
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-KE', { 
+      style: 'currency', 
+      currency: 'KES',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
   };
   
   if (loading) {
@@ -227,17 +270,19 @@ const Wallet = () => {
   
   return (
     <div className="container">
+      {/* Wallet header and stats */}
       <div className="wallet-header">
         <h1>Wallet</h1>
         <p>Manage your earnings and withdrawals</p>
       </div>
       
+      {/* Wallet stats cards */}
       <div className="wallet-stats-container">
         <div className="wallet-stat-card">
           <div className="wallet-stat-icon">💰</div>
           <div className="wallet-stat-content">
             <h3>Available Balance</h3>
-            <p className="wallet-stat-value">KSh {userData?.availableBalance || 0}</p>
+            <p className="wallet-stat-value">{formatCurrency(userData?.availableBalance || 0)}</p>
           </div>
         </div>
         
@@ -245,7 +290,7 @@ const Wallet = () => {
           <div className="wallet-stat-icon">📊</div>
           <div className="wallet-stat-content">
             <h3>Total Earnings</h3>
-            <p className="wallet-stat-value">KSh {userData?.totalEarnings || 0}</p>
+            <p className="wallet-stat-value">{formatCurrency(userData?.totalEarnings || 0)}</p>
           </div>
         </div>
         
@@ -253,80 +298,35 @@ const Wallet = () => {
           <div className="wallet-stat-icon">💸</div>
           <div className="wallet-stat-content">
             <h3>Total Withdrawn</h3>
-            <p className="wallet-stat-value">KSh {userData?.totalWithdrawn || 0}</p>
+            <p className="wallet-stat-value">{formatCurrency(userData?.totalWithdrawn || 0)}</p>
           </div>
         </div>
       </div>
       
+      {/* Withdrawal section */}
       {userData?.availableBalance > 0 ? (
         <div className="withdrawal-section">
           <h2>Request Withdrawal</h2>
           
-          {withdrawalSuccess && (
-            <div className="success-message">
-              Withdrawal request submitted successfully! We'll process it within 24 hours.
-            </div>
-          )}
-          
-          {withdrawalError && (
-            <div className="error-message">
-              {withdrawalError}
-            </div>
-          )}
-          
-          <form onSubmit={handleWithdrawal} className="withdrawal-form">
-            <div className="form-group">
-              <label htmlFor="amount" className="form-label">Amount (KSh)</label>
-              <input
-                type="number"
-                id="amount"
-                className="form-control"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="Enter amount (min. KSh 50)"
-                min="50"
-                max={userData?.availableBalance}
-                disabled={withdrawalLoading}
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="mpesaNumber" className="form-label">M-Pesa Number</label>
-              <input
-                type="text"
-                id="mpesaNumber"
-                className="form-control"
-                value={mpesaNumber}
-                onChange={(e) => setMpesaNumber(e.target.value)}
-                placeholder="e.g., 0712345678"
-                disabled={withdrawalLoading}
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="mpesaName" className="form-label">M-Pesa Account Name</label>
-              <input
-                type="text"
-                id="mpesaName"
-                className="form-control"
-                value={mpesaName}
-                onChange={(e) => setMpesaName(e.target.value)}
-                placeholder="Enter the name on your M-Pesa account"
-                disabled={withdrawalLoading}
-                required
-              />
-            </div>
-            
+          {/* Only show form if all requirements are met and user clicks through */}
+          {showWithdrawalForm ? (
+            <WithdrawalForm 
+              availableBalance={userData?.availableBalance} 
+              minWithdrawalAmount={MIN_WITHDRAWAL_AMOUNT}
+              minTransactionAmount={MIN_TRANSACTION_AMOUNT}
+              onSuccess={() => refreshUserData()}
+              userId={currentUser?.uid}
+              logFirestoreOperation={logFirestoreOperation}
+            />
+          ) : (
             <button 
-              type="submit" 
               className="btn btn-primary w-full" 
-              disabled={withdrawalLoading}
+              onClick={handleWithdrawalClick}
+              disabled={loading}
             >
-              {withdrawalLoading ? 'Processing...' : 'Request Withdrawal'}
+              {loading ? 'Processing...' : 'Request Withdrawal'}
             </button>
-          </form>
+          )}
         </div>
       ) : (
         <div className="no-balance">
@@ -341,50 +341,51 @@ const Wallet = () => {
         </div>
       )}
       
-      <div className="withdrawal-history">
-        <h2>Withdrawal History</h2>
-        
-        {withdrawalHistory.length === 0 ? (
-          <div className="no-history">
-            <p>No withdrawal history yet.</p>
-          </div>
-        ) : (
-          <div className="history-list">
-            <div className="history-header">
-              <div className="history-date">Date</div>
-              <div className="history-amount">Amount</div>
-              <div className="history-method">M-Pesa</div>
-              <div className="history-status">Status</div>
-            </div>
-            
-            {withdrawalHistory.map((withdrawal) => {
-              const date = withdrawal.createdAt ? new Date(withdrawal.createdAt.seconds * 1000) : new Date();
-              const formattedDate = date.toLocaleDateString();
-              
-              return (
-                <div key={withdrawal.id} className="history-item">
-                  <div className="history-date">{formattedDate}</div>
-                  <div className="history-amount">KSh {withdrawal.amount}</div>
-                  <div className="history-method">{withdrawal.mpesaNumber}</div>
-                  <div className="history-status">
-                    <span className={`status-badge ${getStatusClass(withdrawal.status)}`}>
-                      {withdrawal.status}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      {/* Withdrawal history section */}
+      <WithdrawalHistory history={withdrawalHistory} />
       
+      {/* Modals */}
+      {showActivationModal && (
+        <AccountActivationModal 
+          onActivate={handleActivateAccount}
+          onClose={() => setShowActivationModal(false)}
+          loading={loading}
+        />
+      )}
+      
+      {showReferralModal && (
+        <ReferralShareModal 
+          referralLink={userData?.referralLink}
+          referralCode={userData?.referralCode}
+          activatedReferrals={userData?.referralStats?.activatedReferrals || 0}
+          requiredReferrals={REQUIRED_REFERRALS}
+          onClose={() => setShowReferralModal(false)}
+          // Removed onProceed prop
+        />
+      )}
+      
+      {showMinBalanceModal && (
+        <MinimumBalanceModal
+          currentBalance={userData?.availableBalance || 0}
+          minAmount={MIN_WITHDRAWAL_AMOUNT}
+          onClose={() => setShowMinBalanceModal(false)}
+          // Removed onProceed prop
+        />
+      )}
+      
+      {/* Info section - progressively reveals requirements */}
       <div className="wallet-note">
         <h3>Withdrawal Information</h3>
         <ul>
-          <li>Minimum withdrawal amount: KSh 50</li>
-          <li>Withdrawals are processed within 24 hours</li>
-          <li>Make sure your M-Pesa number and name are correct</li>
-          <li>For any issues, contact support</li>
+          <li>Minimum withdrawal transaction: KSh {MIN_TRANSACTION_AMOUNT}</li>
+          {!userData?.isAccountActivated ? null : (
+            <li>{REQUIRED_REFERRALS} activated referrals required for withdrawals</li>
+          )}
+          {(!userData?.isAccountActivated || userData?.referralStats?.activatedReferrals < REQUIRED_REFERRALS) ? null : (
+            <li>Minimum balance of {formatCurrency(MIN_WITHDRAWAL_AMOUNT)} required for withdrawals</li>
+          )}
+          <li>Withdrawals processed within 24 hours</li>
+          <li>Funds are sent directly to your M-Pesa account</li>
         </ul>
       </div>
     </div>

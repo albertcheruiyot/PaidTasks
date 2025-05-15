@@ -1,0 +1,206 @@
+/* src/components/layout/PwaInstallModal.css */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 1rem;
+  }
+  
+  .modal-container {
+    max-width: 550px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modal-appear 0.3s ease-out;
+  }
+  
+  @keyframes modal-appear {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .modal-content {
+    background-color: white;
+    border-radius: 1rem;
+    padding: 2rem;
+    position: relative;
+  }
+  
+  .modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #f3f4f6;
+    border: none;
+    transition: all 0.3s ease;
+  }
+  
+  .modal-close:hover {
+    background-color: #e5e7eb;
+  }
+  
+  .modal-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .pwa-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+    color: #1F2937;
+  }
+  
+  .modal-header p {
+    color: #6B7280;
+  }
+  
+  .installation-instructions {
+    margin-bottom: 1.5rem;
+  }
+  
+  .device-instructions {
+    background-color: #f9fafb;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  .device-instructions h3 {
+    margin-bottom: 1rem;
+    color: #1F2937;
+    font-size: 1.25rem;
+  }
+  
+  .device-instructions ol {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .device-instructions li {
+    margin-bottom: 0.75rem;
+    color: #4B5563;
+  }
+  
+  .ios-share-icon,
+  .android-menu-icon,
+  .chrome-menu-icon {
+    display: inline-block;
+    margin: 0 0.25rem;
+    font-weight: bold;
+  }
+  
+  .instruction-image {
+    height: 180px;
+    background-color: #e5e7eb;
+    border-radius: 0.5rem;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-top: 1rem;
+  }
+  
+  .ios-image {
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M255.9 120.9l9.1-15.7c5.6-9.8 18.1-13.1 27.9-7.5 9.8 5.6 13.1 18.1 7.5 27.9l-87.5 151.5h63.3c20.5 0 32 24.1 23.1 40.8H113.8c-11.3 0-20.4-9.1-20.4-20.4 0-11.3 9.1-20.4 20.4-20.4h52l66.6-115.4-20.8-36.1c-5.6-9.8-2.3-22.2 7.5-27.9 9.8-5.6 22.2-2.3 27.9 7.5l8.9 15.7zm-78.7 218l-19.6 34c-5.6 9.8-18.1 13.1-27.9 7.5-9.8-5.6-13.1-18.1-7.5-27.9l14.6-25.2c16.4-5.1 29.8-1.2 40.4 11.6zm168.9-61.7h53.1c11.3 0 20.4 9.1 20.4 20.4 0 11.3-9.1 20.4-20.4 20.4h-29.5l19.9 34.5c5.6 9.8 2.3 22.2-7.5 27.9-9.8 5.6-22.2 2.3-27.9-7.5-33.5-58.3-58.7-101.9-75.4-130.9-17-29.5-4.8-58.7 15.2-68.6 20.2-10 50.9-13.3 75.5 30.4 25.2 44.7 43.6 82.8 76.6 144.4 5.6 9.8 2.3 22.2-7.5 27.9-9.8 5.6-22.2 2.3-27.9-7.5l-17.7-30.7h-22.6l-52.1-90.7z"/></svg>');
+  }
+  
+  .android-image {
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M380.91 199l42.47-73.57a8.63 8.63 0 00-3.12-11.76 8.52 8.52 0 00-11.71 3.12l-43 74.52c-32.83-14.05-69.78-21.55-108.81-21.55-39.43 0-76.7 7.52-109.78 21.64l-42.66-74.31a8.51 8.51 0 00-11.7-3.12 8.64 8.64 0 00-3.12 11.75L131 199c-51 26.57-84.62 69.56-84.62 119.7h418.15c0-50-33.51-92.93-84.39-119.4zM198.57 264.43a14.15 14.15 0 1114.14-14.14 14.14 14.14 0 01-14.14 14.14zm114.29 0a14.15 14.15 0 1114.14-14.14 14.14 14.14 0 01-14.14 14.14z"/><path d="M131.09 308.88H84.5a8.51 8.51 0 00-8.5 8.5v115.68a8.51 8.51 0 008.5 8.5h46.59a8.51 8.51 0 008.5-8.5V317.38a8.51 8.51 0 00-8.5-8.5zm296.19 0h-46.59a8.51 8.51 0 00-8.5 8.5v115.68a8.51 8.51 0 008.5 8.5h46.59a8.51 8.51 0 008.5-8.5V317.38a8.51 8.51 0 00-8.5-8.5z"/></svg>');
+  }
+  
+  .desktop-image {
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M480 48H32a16 16 0 00-16 16v320a16 16 0 0016 16h168v32h-72v32h256v-32h-72v-32h168a16 16 0 0016-16V64a16 16 0 00-16-16zm-20 36v216H52V84zM52 368V332h408v36z" fill-rule="evenodd"/></svg>');
+  }
+  
+  .pwa-benefits {
+    margin-bottom: 1.5rem;
+  }
+  
+  .pwa-benefits h3 {
+    margin-bottom: 1rem;
+    color: #1F2937;
+    font-size: 1.25rem;
+  }
+  
+  .pwa-benefits ul {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .pwa-benefits li {
+    margin-bottom: 0.5rem;
+    color: #4B5563;
+  }
+  
+  .modal-actions {
+    text-align: center;
+  }
+  
+  .btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+  }
+  
+  .btn-primary {
+    background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 480px) {
+    .modal-content {
+      padding: 1.5rem;
+    }
+    
+    .pwa-icon {
+      font-size: 2.5rem;
+    }
+    
+    .modal-header h2 {
+      font-size: 1.5rem;
+    }
+    
+    .device-instructions {
+      padding: 1rem;
+    }
+    
+    .instruction-image {
+      height: 150px;
+    }
+  }

@@ -210,3 +210,104 @@
       color: var(--color-text-secondary);
     }
   }
+
+  /* src/pages/wallet/Wallet.css (additions) */
+
+/* Form helper texts */
+.form-helper-text {
+    color: var(--color-text-secondary);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    display: block;
+  }
+  
+  /* Success message */
+  .success-message {
+    display: flex;
+    align-items: flex-start;
+    background-color: rgba(16, 185, 129, 0.1);
+    border-left: 4px solid var(--color-success);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-4);
+  }
+  
+  .success-icon {
+    background-color: var(--color-success);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--space-3);
+    flex-shrink: 0;
+  }
+  
+  .success-content h4 {
+    margin-bottom: var(--space-1);
+    color: var(--color-success);
+  }
+  
+  .success-content p {
+    color: var(--color-text-secondary);
+    margin-bottom: 0;
+    font-size: 0.9rem;
+  }
+  
+  /* Error message */
+  .error-message {
+    display: flex;
+    align-items: flex-start;
+    background-color: rgba(239, 68, 68, 0.1);
+    border-left: 4px solid var(--color-error);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-4);
+  }
+  
+  .error-icon {
+    background-color: var(--color-error);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--space-3);
+    flex-shrink: 0;
+  }
+  
+  .error-content {
+    color: var(--color-error);
+    margin-bottom: 0;
+  }
+  
+  /* Withdrawal terms */
+  .withdrawal-terms {
+    background-color: var(--color-background);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-4);
+  }
+  
+  .withdrawal-terms p {
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 0;
+  }
+  
+  /* Small spinner for buttons */
+  .spinner-sm {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: var(--space-2);
+    vertical-align: middle;
+  }
