@@ -3,7 +3,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { registerWithEmail, signInWithGoogle } from '../../services/firebase/authService';
-import { useNotification } from '../../context/NotificationContext';
+import { useAuth } from '../../context/AuthContext';
+import FloatingCoins from '../../components/animations/FloatingCoins';
+import StaggeredReveal from '../../components/animations/StaggeredReveal';
 import './Auth.css';
 
 // Password strength checker
@@ -51,6 +53,7 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [referralCode, setReferralCode] = useState('');
+  const [referralCodeFromUrl, setReferralCodeFromUrl] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   
   const [passwordStrength, setPasswordStrength] = useState({ score: 0, strength: '' });
@@ -68,7 +71,7 @@ const Register = () => {
   
   const navigate = useNavigate();
   const location = useLocation();
-  const { showSuccess, showError } = useNotification();
+  const { showNotification } = useAuth();
   
   const fullNameInputRef = useRef(null);
   
@@ -79,12 +82,16 @@ const Register = () => {
     
     if (refCode) {
       setReferralCode(refCode);
+      setReferralCodeFromUrl(true);
       // Also store in localStorage as a backup
       localStorage.setItem('referralCode', refCode);
     } else {
       // Check localStorage in case they arrived from a link but refreshed the page
       const storedRefCode = localStorage.getItem('referralCode');
-      if (storedRefCode) setReferralCode(storedRefCode);
+      if (storedRefCode) {
+        setReferralCode(storedRefCode);
+        setReferralCodeFromUrl(true);
+      }
     }
     
     // Focus the name input on component mount
@@ -151,7 +158,7 @@ const Register = () => {
       setLoading(true);
       setError('');
       
-      // Register with Firebase
+      // Register with Firebase - using a cleaned referral code
       await registerWithEmail({
         email,
         password,
@@ -159,12 +166,12 @@ const Register = () => {
         referralCode: referralCode.trim() || null
       });
       
-      showSuccess('Account created successfully! Please verify your email.');
+      showNotification({ type: 'success', message: 'Account created successfully!' });
       navigate('/dashboard');
     } catch (err) {
       console.error('Registration error:', err);
       setError(getErrorMessage(err.code));
-      showError(getErrorMessage(err.code));
+      showNotification({ type: 'error', message: getErrorMessage(err.code) });
     } finally {
       setLoading(false);
     }
@@ -175,16 +182,21 @@ const Register = () => {
       setLoading(true);
       setError('');
       
-      // Sign in with Google
+      // Sign in with Google - using stored referral code
       const storedRefCode = referralCode || localStorage.getItem('referralCode') || null;
-      await signInWithGoogle(storedRefCode);
+      const { user, isNewUser } = await signInWithGoogle(storedRefCode);
       
-      showSuccess('Signed in with Google successfully!');
+      if (isNewUser) {
+        showNotification({ type: 'success', message: 'Account created with Google successfully!' });
+      } else {
+        showNotification({ type: 'success', message: 'Signed in with Google successfully!' });
+      }
+      
       navigate('/dashboard');
     } catch (err) {
       console.error('Google sign-up error:', err);
       setError(getErrorMessage(err.code));
-      showError(getErrorMessage(err.code));
+      showNotification({ type: 'error', message: getErrorMessage(err.code) });
     } finally {
       setLoading(false);
     }
@@ -205,6 +217,8 @@ const Register = () => {
         return 'Too many attempts. Please try again later.';
       case 'auth/popup-closed-by-user':
         return 'Sign-in popup was closed before completing. Please try again.';
+      case 'invalid-referral-code':
+        return 'The referral code you entered is invalid or has been deactivated.';
       default:
         return 'An error occurred during registration. Please try again.';
     }
@@ -220,6 +234,9 @@ const Register = () => {
   
   return (
     <div className="auth-container">
+      {/* Background floating coins */}
+      <FloatingCoins count={12} />
+      
       <div className="auth-card">
         {/* Decorative elements */}
         <div className="auth-decoration auth-decoration-1">💸</div>
@@ -240,149 +257,156 @@ const Register = () => {
           )}
           
           <form className="auth-form" onSubmit={handleRegister}>
-            <div className={`auth-input-group ${focusedInput === 'fullName' ? 'focused' : ''}`}>
-              <label htmlFor="fullName" className="auth-label">Full Name</label>
-              <span className="auth-input-icon">👤</span>
-              <input
-                type="text"
-                id="fullName"
-                className="auth-input"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                onFocus={() => handleInputFocus('fullName')}
-                onBlur={handleInputBlur}
-                placeholder="Enter your full name"
-                ref={fullNameInputRef}
-                disabled={loading}
-                required
-              />
-            </div>
-            
-            <div className={`auth-input-group ${focusedInput === 'email' ? 'focused' : ''}`}>
-              <label htmlFor="email" className="auth-label">Email Address</label>
-              <span className="auth-input-icon">✉️</span>
-              <input
-                type="email"
-                id="email"
-                className="auth-input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onFocus={() => handleInputFocus('email')}
-                onBlur={handleInputBlur}
-                placeholder="Enter your email"
-                disabled={loading}
-                required
-              />
-            </div>
-            
-            <div className={`auth-input-group ${focusedInput === 'password' ? 'focused' : ''}`}>
-              <label htmlFor="password" className="auth-label">Password</label>
-              <span className="auth-input-icon">🔒</span>
-              <input
-                type="password"
-                id="password"
-                className="auth-input"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onFocus={() => handleInputFocus('password')}
-                onBlur={handleInputBlur}
-                placeholder="Create a strong password"
-                disabled={loading}
-                required
-              />
+            <StaggeredReveal staggerDelay={0.1}>
+              <div className={`auth-input-group ${focusedInput === 'fullName' ? 'focused' : ''}`}>
+                <label htmlFor="fullName" className="auth-label">Full Name</label>
+                <span className="auth-input-icon">👤</span>
+                <input
+                  type="text"
+                  id="fullName"
+                  className="auth-input"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  onFocus={() => handleInputFocus('fullName')}
+                  onBlur={handleInputBlur}
+                  placeholder="Enter your full name"
+                  ref={fullNameInputRef}
+                  disabled={loading}
+                  required
+                />
+              </div>
               
-              {password && (
-                <>
-                  <div className="password-strength">
-                    <div 
-                      className={`password-strength-bar strength-${passwordStrength.strength}`}
-                    ></div>
-                  </div>
-                  <div className="password-strength-text">
-                    <span>Strength:</span>
-                    <span>{passwordStrength.strength.charAt(0).toUpperCase() + passwordStrength.strength.slice(1)}</span>
-                  </div>
-                  <div className="password-requirements">
-                    <div className={`password-requirement ${passwordRequirements.length ? 'requirement-met' : 'requirement-unmet'}`}>
-                      <span className="requirement-icon">{passwordRequirements.length ? '✓' : '○'}</span>
-                      <span>At least 8 characters</span>
+              <div className={`auth-input-group ${focusedInput === 'email' ? 'focused' : ''}`}>
+                <label htmlFor="email" className="auth-label">Email Address</label>
+                <span className="auth-input-icon">✉️</span>
+                <input
+                  type="email"
+                  id="email"
+                  className="auth-input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onFocus={() => handleInputFocus('email')}
+                  onBlur={handleInputBlur}
+                  placeholder="Enter your email"
+                  disabled={loading}
+                  required
+                />
+              </div>
+              
+              <div className={`auth-input-group ${focusedInput === 'password' ? 'focused' : ''}`}>
+                <label htmlFor="password" className="auth-label">Password</label>
+                <span className="auth-input-icon">🔒</span>
+                <input
+                  type="password"
+                  id="password"
+                  className="auth-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => handleInputFocus('password')}
+                  onBlur={handleInputBlur}
+                  placeholder="Create a strong password"
+                  disabled={loading}
+                  required
+                />
+                
+                {password && (
+                  <>
+                    <div className="password-strength">
+                      <div 
+                        className={`password-strength-bar strength-${passwordStrength.strength}`}
+                      ></div>
                     </div>
-                    <div className={`password-requirement ${passwordRequirements.uppercase ? 'requirement-met' : 'requirement-unmet'}`}>
-                      <span className="requirement-icon">{passwordRequirements.uppercase ? '✓' : '○'}</span>
-                      <span>At least 1 uppercase letter</span>
+                    <div className="password-strength-text">
+                      <span>Strength:</span>
+                      <span>{passwordStrength.strength.charAt(0).toUpperCase() + passwordStrength.strength.slice(1)}</span>
                     </div>
-                    <div className={`password-requirement ${passwordRequirements.lowercase ? 'requirement-met' : 'requirement-unmet'}`}>
-                      <span className="requirement-icon">{passwordRequirements.lowercase ? '✓' : '○'}</span>
-                      <span>At least 1 lowercase letter</span>
+                    <div className="password-requirements">
+                      <div className={`password-requirement ${passwordRequirements.length ? 'requirement-met' : 'requirement-unmet'}`}>
+                        <span className="requirement-icon">{passwordRequirements.length ? '✓' : '○'}</span>
+                        <span>At least 8 characters</span>
+                      </div>
+                      <div className={`password-requirement ${passwordRequirements.uppercase ? 'requirement-met' : 'requirement-unmet'}`}>
+                        <span className="requirement-icon">{passwordRequirements.uppercase ? '✓' : '○'}</span>
+                        <span>At least 1 uppercase letter</span>
+                      </div>
+                      <div className={`password-requirement ${passwordRequirements.lowercase ? 'requirement-met' : 'requirement-unmet'}`}>
+                        <span className="requirement-icon">{passwordRequirements.lowercase ? '✓' : '○'}</span>
+                        <span>At least 1 lowercase letter</span>
+                      </div>
+                      <div className={`password-requirement ${passwordRequirements.number ? 'requirement-met' : 'requirement-unmet'}`}>
+                        <span className="requirement-icon">{passwordRequirements.number ? '✓' : '○'}</span>
+                        <span>At least 1 number</span>
+                      </div>
                     </div>
-                    <div className={`password-requirement ${passwordRequirements.number ? 'requirement-met' : 'requirement-unmet'}`}>
-                      <span className="requirement-icon">{passwordRequirements.number ? '✓' : '○'}</span>
-                      <span>At least 1 number</span>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-            
-            <div className={`auth-input-group ${focusedInput === 'confirmPassword' ? 'focused' : ''}`}>
-              <label htmlFor="confirmPassword" className="auth-label">Confirm Password</label>
-              <span className="auth-input-icon">🔒</span>
-              <input
-                type="password"
-                id="confirmPassword"
-                className="auth-input"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                onFocus={() => handleInputFocus('confirmPassword')}
-                onBlur={handleInputBlur}
-                placeholder="Confirm your password"
+                  </>
+                )}
+              </div>
+              
+              <div className={`auth-input-group ${focusedInput === 'confirmPassword' ? 'focused' : ''}`}>
+                <label htmlFor="confirmPassword" className="auth-label">Confirm Password</label>
+                <span className="auth-input-icon">🔒</span>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  className="auth-input"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onFocus={() => handleInputFocus('confirmPassword')}
+                  onBlur={handleInputBlur}
+                  placeholder="Confirm your password"
+                  disabled={loading}
+                  required
+                />
+              </div>
+              
+              {/* Referral code field - auto-populated if from link */}
+              <div className={`auth-input-group ${focusedInput === 'referralCode' ? 'focused' : ''}`}>
+                <label htmlFor="referralCode" className="auth-label">
+                  Referral Code <span style={{ color: 'var(--color-text-secondary)', fontWeight: 'normal' }}>{!referralCodeFromUrl && "(Optional)"}</span>
+                </label>
+                <span className="auth-input-icon">👥</span>
+                <input
+                  type="text"
+                  id="referralCode"
+                  className="auth-input"
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                  onFocus={() => handleInputFocus('referralCode')}
+                  onBlur={handleInputBlur}
+                  placeholder="Enter referral code if you have one"
+                  disabled={loading || referralCodeFromUrl}
+                />
+                {referralCodeFromUrl && (
+                  <small className="input-helper-text" style={{color: 'var(--color-success)', marginTop: '8px', display: 'block'}}>
+                    ✓ Referral code applied! You'll both earn rewards.
+                  </small>
+                )}
+              </div>
+              
+              <div className="auth-checkbox-container">
+                <input
+                  type="checkbox"
+                  id="agreeTerms"
+                  className="auth-checkbox"
+                  checked={agreeTerms}
+                  onChange={(e) => setAgreeTerms(e.target.checked)}
+                  disabled={loading}
+                  required
+                />
+                <label htmlFor="agreeTerms">
+                  I agree to the <Link to="/terms" className="auth-link">Terms of Service</Link> and <Link to="/privacy" className="auth-link">Privacy Policy</Link>
+                </label>
+              </div>
+              
+              <button 
+                type="submit" 
+                className="auth-submit-btn" 
                 disabled={loading}
-                required
-              />
-            </div>
-            
-            {/* Referral code field - auto-populated if from link */}
-            <div className={`auth-input-group ${focusedInput === 'referralCode' ? 'focused' : ''}`}>
-              <label htmlFor="referralCode" className="auth-label">
-                Referral Code <span style={{ color: 'var(--color-text-secondary)', fontWeight: 'normal' }}>(Optional)</span>
-              </label>
-              <span className="auth-input-icon">👥</span>
-              <input
-                type="text"
-                id="referralCode"
-                className="auth-input"
-                value={referralCode}
-                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                onFocus={() => handleInputFocus('referralCode')}
-                onBlur={handleInputBlur}
-                placeholder="Enter referral code if you have one"
-                disabled={loading || (referralCode && Boolean(new URLSearchParams(location.search).get('ref')))}
-              />
-            </div>
-            
-            <div className="auth-checkbox-container">
-              <input
-                type="checkbox"
-                id="agreeTerms"
-                className="auth-checkbox"
-                checked={agreeTerms}
-                onChange={(e) => setAgreeTerms(e.target.checked)}
-                disabled={loading}
-                required
-              />
-              <label htmlFor="agreeTerms">
-                I agree to the <Link to="/terms" className="auth-link">Terms of Service</Link> and <Link to="/privacy" className="auth-link">Privacy Policy</Link>
-              </label>
-            </div>
-            
-            <button 
-              type="submit" 
-              className="auth-submit-btn" 
-              disabled={loading}
-            >
-              {loading && <div className="spinner"></div>}
-              {loading ? 'Creating Account...' : 'Create Account'}
-            </button>
+              >
+                {loading && <div className="spinner"></div>}
+                {loading ? 'Creating Account...' : 'Create Account'}
+              </button>
+            </StaggeredReveal>
           </form>
           
           <div className="auth-divider">or</div>
@@ -404,7 +428,7 @@ const Register = () => {
             </button>
           </div>
           
-          {referralCode && (
+          {referralCodeFromUrl && (
             <div className="referral-section">
               <div className="referral-title">
                 <span className="referral-icon">👋</span>

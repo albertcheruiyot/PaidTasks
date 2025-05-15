@@ -4,19 +4,35 @@ import React from 'react';
 
 const coinEmojis = ['💰', '💵', '💸', '🪙', '💎'];
 
-const FloatingCoins = ({ count = 10 }) => {
+/**
+ * FloatingCoins component for decorative animated coins
+ * @param {Object} props
+ * @param {Number} props.count - Number of coins to display
+ * @param {String} props.direction - Animation direction ('up' or 'down')
+ * @param {Number} props.minSize - Minimum coin size
+ * @param {Number} props.maxSize - Maximum coin size
+ */
+const FloatingCoins = ({ 
+  count = 10, 
+  direction = 'up',
+  minSize = 20,
+  maxSize = 50
+}) => {
   // Generate random coins with different properties
-  const coins = Array.from({ length: count }, (_, index) => {
-    return {
-      id: index,
-      emoji: coinEmojis[Math.floor(Math.random() * coinEmojis.length)],
-      size: Math.floor(Math.random() * 30) + 20, // 20-50px
-      left: `${Math.random() * 100}%`,
-      delay: Math.random() * 5,
-      duration: Math.random() * 10 + 10, // 10-20s
-      opacity: Math.random() * 0.5 + 0.3 // 0.3-0.8
-    };
-  });
+  const coins = React.useMemo(() => {
+    return Array.from({ length: count }, (_, index) => {
+      return {
+        id: index,
+        emoji: coinEmojis[Math.floor(Math.random() * coinEmojis.length)],
+        size: Math.floor(Math.random() * (maxSize - minSize)) + minSize,
+        left: `${Math.random() * 100}%`,
+        delay: Math.random() * 5,
+        duration: Math.random() * 10 + 10, // 10-20s
+        opacity: Math.random() * 0.5 + 0.3, // 0.3-0.8
+        rotation: Math.random() * 360
+      };
+    });
+  }, [count, minSize, maxSize]);
 
   return (
     <>
@@ -28,10 +44,12 @@ const FloatingCoins = ({ count = 10 }) => {
             position: 'absolute',
             fontSize: `${coin.size}px`,
             left: coin.left,
-            top: '-50px',
+            top: direction === 'up' ? 'auto' : '-50px',
+            bottom: direction === 'up' ? '-50px' : 'auto',
             opacity: coin.opacity,
-            animation: `floatCoin ${coin.duration}s linear ${coin.delay}s infinite`,
-            zIndex: 1
+            animation: `float${direction === 'up' ? 'Up' : 'Down'} ${coin.duration}s linear ${coin.delay}s infinite`,
+            zIndex: 1,
+            transform: `rotate(${coin.rotation}deg)`
           }}
         >
           {coin.emoji}
@@ -39,9 +57,26 @@ const FloatingCoins = ({ count = 10 }) => {
       ))}
 
       <style jsx="true">{`
-        @keyframes floatCoin {
+        @keyframes floatUp {
           0% {
-            transform: translateY(-50px) rotate(0deg);
+            transform: translateY(20px) rotate(0deg);
+            opacity: 0;
+          }
+          10% {
+            opacity: ${props => props.opacity};
+          }
+          90% {
+            opacity: ${props => props.opacity};
+          }
+          100% {
+            transform: translateY(calc(-100vh - 50px)) rotate(360deg);
+            opacity: 0;
+          }
+        }
+        
+        @keyframes floatDown {
+          0% {
+            transform: translateY(-20px) rotate(0deg);
             opacity: 0;
           }
           10% {

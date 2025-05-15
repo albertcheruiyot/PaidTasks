@@ -12,13 +12,15 @@ import {
   import { 
     doc, 
     getDoc, 
-    setDoc, a
+    setDoc, 
     updateDoc, 
     increment,
     collection, 
     query, 
     where, 
     getDocs,
+    orderBy,
+    limit,
     serverTimestamp, 
     runTransaction,
     writeBatch
@@ -54,6 +56,31 @@ import {
   };
   
   /**
+   * Store a new referral code in the dedicated referralCodes collection
+   * @param {string} referralCode - The generated referral code
+   * @param {string} referrerUid - User ID of the referrer
+   * @returns {Promise<boolean>} Success status
+   */
+  const storeReferralCode = async (referralCode, referrerUid) => {
+    try {
+      // Create referral code document in referralCodes collection
+      const referralData = {
+        referrerUid,
+        createdAt: serverTimestamp(),
+        isActive: true
+      };
+      
+      logFirestoreOperation('WRITE', `referralCodes/${referralCode}`, referralData);
+      
+      await setDoc(doc(db, 'referralCodes', referralCode), referralData);
+      return true;
+    } catch (error) {
+      console.error("Error storing referral code:", error);
+      return false;
+    }
+  };
+  
+  /**
    * Validate referral code exists
    * @param {string} referralCode - Referral code to validate
    * @returns {Promise<string|null>} Referrer user ID or null if not found
@@ -62,18 +89,20 @@ import {
     try {
       if (!referralCode) return null;
       
-      // Log the read operation
-      logFirestoreOperation('READ (query)', 'users collection', `where referralCode == ${referralCode}`);
+      // Direct document lookup - more efficient than a query
+      logFirestoreOperation('READ', `referralCodes/${referralCode}`);
       
-      // Query users by referral code
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where('referralCode', '==', referralCode));
-      const querySnapshot = await getDocs(q);
+      const referralDocRef = doc(db, 'referralCodes', referralCode);
+      const referralDoc = await getDoc(referralDocRef);
       
-      if (querySnapshot.empty) return null;
+      if (!referralDoc.exists()) return null;
+      
+      // Check if the referral code is active
+      const referralData = referralDoc.data();
+      if (!referralData.isActive) return null;
       
       // Return the referrer's user ID
-      return querySnapshot.docs[0].id;
+      return referralData.referrerUid;
     } catch (error) {
       console.error("Error validating referral code:", error);
       return null;
@@ -89,6 +118,16 @@ import {
     const { email, password, fullName, referralCode } = userData;
     
     try {
+      // Validate referral code if provided
+      let referrerUid = null;
+      if (referralCode) {
+        referrerUid = await validateReferralCode(referralCode);
+        if (!referrerUid && referralCode) {
+          // If a referral code was provided but is invalid, throw an error
+          throw { code: 'invalid-referral-code' };
+        }
+      }
+      
       // Create user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -97,12 +136,6 @@ import {
       await updateProfile(user, {
         displayName: fullName
       });
-      
-      // Validate referral code if provided
-      let referrerUid = null;
-      if (referralCode) {
-        referrerUid = await validateReferralCode(referralCode);
-      }
       
       // Generate unique referral code for the new user
       const newReferralCode = generateReferralCode(user.uid);
@@ -132,29 +165,36 @@ import {
         referredBy: referrerUid
       };
       
-      // Log the write operation
-      logFirestoreOperation('WRITE', `users/${user.uid}`, userDocData);
+      // Start batch operation for consistency
+      const batch = writeBatch(db);
       
-      // Save user document
-      await setDoc(doc(db, 'users', user.uid), userDocData);
+      // Log the write operation for user document
+      logFirestoreOperation('BATCH WRITE', `users/${user.uid}`, userDocData);
+      
+      // Add user document to batch
+      batch.set(doc(db, 'users', user.uid), userDocData);
+      
+      // Store referral code in the dedicated referralCodes collection
+      const referralCodeData = {
+        referrerUid: user.uid,
+        createdAt: serverTimestamp(),
+        isActive: true,
+        userEmail: user.email, // Add email for admin reference/lookup
+        usedCount: 0 // Track how many times this code has been used
+      };
+      
+      logFirestoreOperation('BATCH WRITE', `referralCodes/${newReferralCode}`, referralCodeData);
+      
+      batch.set(doc(db, 'referralCodes', newReferralCode), referralCodeData);
       
       // Update referrer's stats if applicable
       if (referrerUid) {
-        // Use transaction to update referrer's stats to ensure consistency
-        logFirestoreOperation('TRANSACTION', `users/${referrerUid}`, 'Update referral stats');
+        logFirestoreOperation('BATCH UPDATE', `users/${referrerUid}`, {
+          'referralStats.totalReferrals': increment(1)
+        });
         
-        await runTransaction(db, async (transaction) => {
-          const referrerDocRef = doc(db, 'users', referrerUid);
-          const referrerDoc = await transaction.get(referrerDocRef);
-          
-          if (!referrerDoc.exists()) {
-            throw new Error("Referrer document does not exist!");
-          }
-          
-          // Increment total referrals counter
-          transaction.update(referrerDocRef, {
-            'referralStats.totalReferrals': increment(1)
-          });
+        batch.update(doc(db, 'users', referrerUid), {
+          'referralStats.totalReferrals': increment(1)
         });
         
         // Add to referrer's referrals subcollection (for listing purposes)
@@ -166,13 +206,25 @@ import {
           activated: false
         };
         
-        logFirestoreOperation('WRITE', `users/${referrerUid}/referrals/${user.uid}`, referralData);
+        logFirestoreOperation('BATCH WRITE', `users/${referrerUid}/referrals/${user.uid}`, referralData);
         
-        await setDoc(
-          doc(db, 'users', referrerUid, 'referrals', user.uid),
-          referralData
-        );
+        batch.set(doc(db, 'users', referrerUid, 'referrals', user.uid), referralData);
+        
+        // Increment the usedCount on the referral code
+        const referralCodeRef = doc(db, 'referralCodes', referralCode);
+        logFirestoreOperation('BATCH UPDATE', `referralCodes/${referralCode}`, {
+          usedCount: increment(1),
+          lastUsedAt: serverTimestamp()
+        });
+        
+        batch.update(referralCodeRef, {
+          usedCount: increment(1),
+          lastUsedAt: serverTimestamp()
+        });
       }
+      
+      // Commit all operations in a single batch
+      await batch.commit();
       
       return { user, isNewUser: true };
     } catch (error) {
@@ -188,10 +240,21 @@ import {
    */
   export const signInWithGoogle = async (referralCode = null) => {
     try {
+      // Validate referral code if provided
+      let referrerUid = null;
+      if (referralCode) {
+        referrerUid = await validateReferralCode(referralCode);
+        if (!referrerUid && referralCode) {
+          // If a referral code was provided but is invalid, throw an error
+          throw { code: 'invalid-referral-code' };
+        }
+      }
+      
       // Create Google provider
       const provider = new GoogleAuthProvider();
       const userCredential = await signInWithPopup(auth, provider);
       const user = userCredential.user;
+      const isNewUser = userCredential.additionalUserInfo?.isNewUser || false;
       
       // Check if user document exists
       logFirestoreOperation('READ', `users/${user.uid}`);
@@ -201,15 +264,12 @@ import {
       
       // If new user, validate referral and create document
       if (!userDoc.exists()) {
-        // Validate referral code if provided
-        let referrerUid = null;
-        if (referralCode) {
-          referrerUid = await validateReferralCode(referralCode);
-        }
-        
         // Generate unique referral code
         const newReferralCode = generateReferralCode(user.uid);
         const referralLink = generateReferralLink(newReferralCode);
+        
+        // Start batch write for consistency
+        const batch = writeBatch(db);
         
         // Create user document
         const userDocData = {
@@ -235,26 +295,29 @@ import {
           referredBy: referrerUid
         };
         
-        logFirestoreOperation('WRITE', `users/${user.uid}`, userDocData);
+        logFirestoreOperation('BATCH WRITE', `users/${user.uid}`, userDocData);
+        batch.set(userDocRef, userDocData);
         
-        await setDoc(userDocRef, userDocData);
+        // Store referral code in the dedicated referralCodes collection
+        const referralCodeData = {
+          referrerUid: user.uid,
+          createdAt: serverTimestamp(),
+          isActive: true,
+          userEmail: user.email, // Add email for admin reference/lookup
+          usedCount: 0 // Track how many times this code has been used
+        };
+        
+        logFirestoreOperation('BATCH WRITE', `referralCodes/${newReferralCode}`, referralCodeData);
+        batch.set(doc(db, 'referralCodes', newReferralCode), referralCodeData);
         
         // Update referrer's stats if applicable
         if (referrerUid) {
-          logFirestoreOperation('TRANSACTION', `users/${referrerUid}`, 'Update referral stats');
+          logFirestoreOperation('BATCH UPDATE', `users/${referrerUid}`, {
+            'referralStats.totalReferrals': increment(1)
+          });
           
-          await runTransaction(db, async (transaction) => {
-            const referrerDocRef = doc(db, 'users', referrerUid);
-            const referrerDoc = await transaction.get(referrerDocRef);
-            
-            if (!referrerDoc.exists()) {
-              throw new Error("Referrer document does not exist!");
-            }
-            
-            // Increment total referrals counter
-            transaction.update(referrerDocRef, {
-              'referralStats.totalReferrals': increment(1)
-            });
+          batch.update(doc(db, 'users', referrerUid), {
+            'referralStats.totalReferrals': increment(1)
           });
           
           // Add to referrer's referrals subcollection
@@ -266,13 +329,24 @@ import {
             activated: false
           };
           
-          logFirestoreOperation('WRITE', `users/${referrerUid}/referrals/${user.uid}`, referralData);
+          logFirestoreOperation('BATCH WRITE', `users/${referrerUid}/referrals/${user.uid}`, referralData);
+          batch.set(doc(db, 'users', referrerUid, 'referrals', user.uid), referralData);
           
-          await setDoc(
-            doc(db, 'users', referrerUid, 'referrals', user.uid),
-            referralData
-          );
+          // Increment the usedCount on the referral code
+          const referralCodeRef = doc(db, 'referralCodes', referralCode);
+          logFirestoreOperation('BATCH UPDATE', `referralCodes/${referralCode}`, {
+            usedCount: increment(1),
+            lastUsedAt: serverTimestamp()
+          });
+          
+          batch.update(referralCodeRef, {
+            usedCount: increment(1),
+            lastUsedAt: serverTimestamp()
+          });
         }
+        
+        // Commit all the batch operations
+        await batch.commit();
         
         return { user, isNewUser: true };
       } else {
@@ -454,10 +528,28 @@ import {
           referredUserId: uid
         };
         
-        logFirestoreOperation('BATCH WRITE', `users/${referrerUid}/transactions/${uid}`, transactionData);
+        // Use a consistent ID for the transaction document - prevents duplicates
+        const transactionId = `ref_reward_${uid}`;
         
-        const transactionDocRef = doc(db, 'users', referrerUid, 'transactions', uid);
+        logFirestoreOperation('BATCH WRITE', `users/${referrerUid}/transactions/${transactionId}`, transactionData);
+        
+        const transactionDocRef = doc(db, 'users', referrerUid, 'transactions', transactionId);
         batch.set(transactionDocRef, transactionData);
+        
+        // Add metrics to a denormalized rewards collection for efficient querying
+        // This helps avoid expensive queries across all user documents
+        const rewardMetricData = {
+          referrerId: referrerUid,
+          referredId: uid,
+          amount: referralReward,
+          timestamp: serverTimestamp(),
+          type: 'referral'
+        };
+        
+        logFirestoreOperation('BATCH WRITE', `rewards/${transactionId}`, rewardMetricData);
+        
+        const rewardMetricDocRef = doc(db, 'rewards', transactionId);
+        batch.set(rewardMetricDocRef, rewardMetricData);
       }
       
       // Commit all changes
