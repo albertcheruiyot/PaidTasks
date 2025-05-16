@@ -18,7 +18,7 @@ const LandingPage = () => {
     },
     {
       question: "How and when do I get paid?",
-      answer: "Payments are processed through M-Pesa. You can request a withdrawal from your wallet anytime once you've reached the minimum withdrawal amount of KSh 50. Withdrawals are typically processed within 24 hours."
+      answer: "Payments are processed through M-Pesa. You can request a withdrawal from your wallet anytime once you've reached the minimum withdrawal amount. Withdrawals are typically processed within 24 hours."
     },
     {
       question: "What types of tasks will I be completing?",
@@ -26,7 +26,7 @@ const LandingPage = () => {
     },
     {
       question: "Is PaidTasks really free to join?",
-      answer: "Yes, PaidTasks is completely free to join. We never charge any fees to create an account or complete tasks. We make our money from advertisers and market research companies who want access to our user base."
+      answer: "Yes, PaidTasks is completely free to join. We never charge any fees to create an account or complete tasks. We make our money from advertisers and market research companies who want access to our user base. We only ask user to activate their freelance account by paying Ksh.250"
     },
     {
       question: "How does the referral program work?",

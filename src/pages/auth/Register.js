@@ -1,4 +1,4 @@
-// src/pages/auth/Register.js
+// src/pages/auth/Register.js - FULL UPDATED CODE
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -51,7 +51,9 @@ const Register = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [referralCode, setReferralCode] = useState('');
   const [referralCodeFromUrl, setReferralCodeFromUrl] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -71,9 +73,16 @@ const Register = () => {
   
   const navigate = useNavigate();
   const location = useLocation();
-  const { showNotification } = useAuth();
+  const { currentUser, showNotification } = useAuth();
   
   const fullNameInputRef = useRef(null);
+  
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (currentUser) {
+      navigate('/dashboard');
+    }
+  }, [currentUser, navigate]);
   
   // Check URL for referral code
   useEffect(() => {
@@ -105,6 +114,15 @@ const Register = () => {
     setPasswordStrength(checkPasswordStrength(password));
     setPasswordRequirements(checkPasswordRequirements(password));
   }, [password]);
+  
+  // Toggle password visibility functions
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+  
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
   
   const validateForm = () => {
     // Check if all fields are filled
@@ -296,18 +314,28 @@ const Register = () => {
               <div className={`auth-input-group ${focusedInput === 'password' ? 'focused' : ''}`}>
                 <label htmlFor="password" className="auth-label">Password</label>
                 <span className="auth-input-icon">🔒</span>
-                <input
-                  type="password"
-                  id="password"
-                  className="auth-input"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => handleInputFocus('password')}
-                  onBlur={handleInputBlur}
-                  placeholder="Create a strong password"
-                  disabled={loading}
-                  required
-                />
+                <div className="password-input-wrapper">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    className="auth-input"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onFocus={() => handleInputFocus('password')}
+                    onBlur={handleInputBlur}
+                    placeholder="Create a strong password"
+                    disabled={loading}
+                    required
+                  />
+                  <button 
+                    type="button" 
+                    className="password-toggle-btn" 
+                    onClick={togglePasswordVisibility}
+                    tabIndex="-1"
+                  >
+                    {showPassword ? '👁️‍🗨️' : '👁️'}
+                  </button>
+                </div>
                 
                 {password && (
                   <>
@@ -345,18 +373,28 @@ const Register = () => {
               <div className={`auth-input-group ${focusedInput === 'confirmPassword' ? 'focused' : ''}`}>
                 <label htmlFor="confirmPassword" className="auth-label">Confirm Password</label>
                 <span className="auth-input-icon">🔒</span>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  className="auth-input"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  onFocus={() => handleInputFocus('confirmPassword')}
-                  onBlur={handleInputBlur}
-                  placeholder="Confirm your password"
-                  disabled={loading}
-                  required
-                />
+                <div className="password-input-wrapper">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    id="confirmPassword"
+                    className="auth-input"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onFocus={() => handleInputFocus('confirmPassword')}
+                    onBlur={handleInputBlur}
+                    placeholder="Confirm your password"
+                    disabled={loading}
+                    required
+                  />
+                  <button 
+                    type="button" 
+                    className="password-toggle-btn" 
+                    onClick={toggleConfirmPasswordVisibility}
+                    tabIndex="-1"
+                  >
+                    {showConfirmPassword ? '👁️‍🗨️' : '👁️'}
+                  </button>
+                </div>
               </div>
               
               {/* Referral code field - auto-populated if from link */}

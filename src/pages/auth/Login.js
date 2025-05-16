@@ -1,4 +1,4 @@
-// src/pages/auth/Login.js
+// src/pages/auth/Login.js - FULL UPDATED CODE
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -10,6 +10,7 @@ import './Auth.css';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -17,11 +18,18 @@ const Login = () => {
   
   const navigate = useNavigate();
   const location = useLocation();
-  const { showNotification } = useAuth();
+  const { currentUser, showNotification } = useAuth();
   
   // Check if there's a referral code in the URL
   const queryParams = new URLSearchParams(location.search);
   const referralCode = queryParams.get('ref');
+  
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (currentUser) {
+      navigate('/dashboard');
+    }
+  }, [currentUser, navigate]);
   
   // Save referral code to localStorage if available
   useEffect(() => {
@@ -111,6 +119,11 @@ const Login = () => {
     return true;
   };
   
+  // Toggle password visibility
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+  
   // Helper function to get user-friendly error messages
   const getErrorMessage = (errorCode) => {
     switch (errorCode) {
@@ -197,18 +210,28 @@ const Login = () => {
             <div className={`auth-input-group ${focusedInput === 'password' ? 'focused' : ''}`}>
               <label htmlFor="password" className="auth-label">Password</label>
               <span className="auth-input-icon">🔒</span>
-              <input
-                type="password"
-                id="password"
-                className="auth-input"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onFocus={() => handleInputFocus('password')}
-                onBlur={handleInputBlur}
-                placeholder="Enter your password"
-                disabled={loading}
-                required
-              />
+              <div className="password-input-wrapper">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  className="auth-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => handleInputFocus('password')}
+                  onBlur={handleInputBlur}
+                  placeholder="Enter your password"
+                  disabled={loading}
+                  required
+                />
+                <button 
+                  type="button" 
+                  className="password-toggle-btn" 
+                  onClick={togglePasswordVisibility}
+                  tabIndex="-1"
+                >
+                  {showPassword ? '👁️‍🗨️' : '👁️'}
+                </button>
+              </div>
             </div>
             
             <div className="auth-extra">

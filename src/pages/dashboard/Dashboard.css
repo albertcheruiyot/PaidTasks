@@ -501,7 +501,7 @@
     background-color: rgba(255, 255, 255, 0.15);
     border: none;
     outline: none;
-    color: white;
+    color: black;
     padding: var(--space-2) var(--space-3);
     border-radius: var(--radius-md);
     font-size: 0.9rem;
