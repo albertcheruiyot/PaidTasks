@@ -1,6 +1,6 @@
 // src/pages/tasks/survey/SurveyTasks.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { doc, updateDoc, increment, arrayUnion, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { useAuth } from '../../../context/AuthContext';
@@ -13,6 +13,7 @@ const SurveyTasks = () => {
   const [error, setError] = useState(null);
   const [completedSurveys, setCompletedSurveys] = useState([]);
   const [animateIn, setAnimateIn] = useState(false);
+  const [surveyList, setSurveyList] = useState([]);
   
   // State for active survey and question
   const [activeSurvey, setActiveSurvey] = useState(null);
@@ -22,37 +23,76 @@ const SurveyTasks = () => {
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [earnedReward, setEarnedReward] = useState(0);
 
+  // Ref for scrolling
+  const surveyContainerRef = useRef(null);
+
   useEffect(() => {
-    const fetchCompletedSurveys = async () => {
+    const fetchSurveyData = async () => {
       try {
         if (userData) {
           // Get completed surveys from userData
           setCompletedSurveys(userData.completedSurveys || []);
+          
+          // Set survey list from imported data
+          setSurveyList(surveyData);
         }
         setLoading(false);
         
         // Trigger animation after a small delay
         setTimeout(() => setAnimateIn(true), 100);
       } catch (err) {
-        console.error('Error fetching completed surveys:', err);
-        setError('Failed to load completed surveys.');
+        console.error('Error fetching survey data:', err);
+        setError('Failed to load surveys.');
         setLoading(false);
       }
     };
 
-    fetchCompletedSurveys();
+    fetchSurveyData();
   }, [userData]);
 
   const handleStartSurvey = (survey) => {
     // Add animation before setting activeSurvey
     setAnimateIn(false);
     setTimeout(() => {
+      // Set the active survey data
       setActiveSurvey(survey);
       setCurrentQuestionIndex(0);
       setAnswers({});
-      // Animate in the survey content
+      
+      // Scroll the survey container into view in the next render cycle
+      setTimeout(() => {
+        if (surveyContainerRef.current) {
+          surveyContainerRef.current.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+        
+        // Animate in the survey content
+        setAnimateIn(true);
+      }, 50);
+    }, 300);
+  };
+
+  const handleCloseSurvey = () => {
+    // Start fade-out animation
+    setAnimateIn(false);
+    
+    // After animation completes, reset survey state
+    setTimeout(() => {
+      setActiveSurvey(null);
+      setCurrentQuestionIndex(0);
+      setAnswers({});
+      
+      // After state is reset, start fade-in animation for survey list
       setTimeout(() => {
         setAnimateIn(true);
+        
+        // Scroll back to top
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
       }, 100);
     }, 300);
   };
@@ -161,7 +201,7 @@ const SurveyTasks = () => {
       });
       
       // Update local state
-      setCompletedSurveys([...completedSurveys, activeSurvey.id]);
+      setCompletedSurveys(prev => [...prev, activeSurvey.id]);
       
       // Show success animation
       setEarnedReward(activeSurvey.reward);
@@ -187,6 +227,11 @@ const SurveyTasks = () => {
           setAnswers({});
           setTimeout(() => {
             setAnimateIn(true);
+            // Scroll back to top of the container when returning to survey list
+            window.scrollTo({
+              top: 0,
+              behavior: 'smooth'
+            });
           }, 100);
         }, 300);
       }, 3500);
@@ -353,7 +398,10 @@ const SurveyTasks = () => {
     
     return (
       <div className="container">
-        <div className={`active-survey-container ${animateIn ? 'fade-in' : 'fade-out'}`}>
+        <div 
+          className={`active-survey-container ${animateIn ? 'fade-in' : 'fade-out'}`}
+          ref={surveyContainerRef}
+        >
           <div className="survey-header">
             <div className="survey-company">
               <div className="company-logo-container">
@@ -368,10 +416,7 @@ const SurveyTasks = () => {
                 </div>
               </div>
             </div>
-            <button className="btn-close-survey" onClick={() => {
-              setAnimateIn(false);
-              setTimeout(() => setActiveSurvey(null), 300);
-            }}>
+            <button className="btn-close-survey" onClick={handleCloseSurvey}>
               ✕
             </button>
           </div>
