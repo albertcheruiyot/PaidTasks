@@ -1,5 +1,4 @@
 // src/pages/dashboard/Dashboard.js
-// First, install the package with: npm install react-custom-roulette
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
@@ -258,9 +257,11 @@ const Dashboard = () => {
       // Get current spin data (using our cached copy to reduce reads)
       const existingSpinData = spinDataRef.current;
       
+      let recentSpinsList = [];
+      
       if (existingSpinData) {
         // Get existing recent spins
-        let recentSpinsList = existingSpinData.recentSpins || [];
+        recentSpinsList = existingSpinData.recentSpins || [];
         
         // Add new spin to the beginning of the array
         recentSpinsList.unshift(newSpin);
@@ -283,10 +284,41 @@ const Dashboard = () => {
           recentSpins: [newSpin],
           totalSpins: 1
         });
+        
+        recentSpinsList = [newSpin];
       }
       
       // Explicitly refresh user data after win (only once)
       await refreshUserData();
+      
+      // FIX: Manually update spin data in local state to lock out further spins immediately
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      const timeLeft = tomorrow.getTime() - now.getTime();
+      
+      // Update the local state to reflect that a spin was just used
+      setTimeUntilNextSpin(timeLeft);
+      setRecentSpins(recentSpinsList);
+      
+      // Update spinDataRef to include latest spin
+      if (spinDataRef.current) {
+        spinDataRef.current = {
+          ...spinDataRef.current,
+          lastSpin: { seconds: Math.floor(now.getTime() / 1000), toDate: () => now },
+          recentSpins: recentSpinsList,
+          totalSpins: (spinDataRef.current.totalSpins || 0) + 1
+        };
+      } else {
+        spinDataRef.current = {
+          lastSpin: { seconds: Math.floor(now.getTime() / 1000), toDate: () => now },
+          recentSpins: recentSpinsList,
+          totalSpins: 1
+        };
+      }
+      
+      // Also restart the countdown timer
+      startCountdownTimer(timeLeft);
       
       // Show notification
       showNotification({
