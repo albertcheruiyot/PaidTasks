@@ -1,24 +1,46 @@
-// src/components/layout/Header.js
+// Modify src/components/layout/Header.js
 
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import ConfirmationDialog from './ConfirmationDialog';
 
-import './Header.css'; // We'll create this CSS file next
+import './Header.css';
 
 const Header = () => {
   const { currentUser, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // Add state for confirmation dialog
+  const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   
-  const handleLogout = async () => {
+  const handleLogoutClick = () => {
+    // Show confirmation dialog instead of logging out immediately
+    setShowLogoutConfirmation(true);
+    
+    // Close mobile menu if open
+    if (mobileMenuOpen) {
+      setMobileMenuOpen(false);
+    }
+  };
+  
+  const handleConfirmLogout = async () => {
     try {
+      // Close confirmation dialog
+      setShowLogoutConfirmation(false);
+      
+      // Proceed with logout
       await logout();
       navigate('/login');
     } catch (error) {
       console.error('Failed to log out', error);
     }
+  };
+  
+  const handleCancelLogout = () => {
+    // Close confirmation dialog without logging out
+    setShowLogoutConfirmation(false);
   };
   
   const toggleMobileMenu = () => {
@@ -60,7 +82,7 @@ const Header = () => {
                 <Link to="/profile" className={`nav-link ${isActive('/profile') ? 'active' : ''}`}>
                   Profile
                 </Link>
-                <button onClick={handleLogout} className="btn btn-outline">Logout</button>
+                <button onClick={handleLogoutClick} className="btn btn-outline">Logout</button>
               </>
             ) : (
               <>
@@ -129,10 +151,7 @@ const Header = () => {
                 Profile
               </Link>
               <button 
-                onClick={() => {
-                  handleLogout();
-                  setMobileMenuOpen(false);
-                }}
+                onClick={handleLogoutClick}
                 className="btn btn-outline w-full mt-4"
               >
                 Logout
@@ -157,6 +176,15 @@ const Header = () => {
             </>
           )}
         </div>
+      )}
+      
+      {/* Logout Confirmation Dialog */}
+      {showLogoutConfirmation && (
+        <ConfirmationDialog
+          message="Are you sure you want to log out?"
+          onConfirm={handleConfirmLogout}
+          onCancel={handleCancelLogout}
+        />
       )}
     </header>
   );

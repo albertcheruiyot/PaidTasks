@@ -96,3 +96,72 @@
   .notification:nth-child(n+5) {
     display: none; /* Hide more than 4 notifications */
   }
+
+  /* Add to the existing Notification.css or create a new ModalStyles.css */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 1rem;
+  }
+  
+  .modal-container {
+    max-width: 450px;
+    width: 100%;
+    animation: modal-appear 0.3s ease-out;
+  }
+  
+  @keyframes modal-appear {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .modal-content {
+    background-color: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    text-align: center;
+  }
+  
+  .modal-content h2 {
+    margin-bottom: 0.75rem;
+    color: var(--color-text-primary);
+    font-size: 1.5rem;
+  }
+  
+  .modal-content p {
+    color: var(--color-text-secondary);
+    margin-bottom: 1.5rem;
+  }
+  
+  .modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+  
+  @media (max-width: 480px) {
+    .modal-actions {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .modal-actions button {
+      width: 100%;
+    }
+  }
