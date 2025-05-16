@@ -403,11 +403,12 @@ const Dashboard = () => {
       
       {/* Daily Spin Wheel */}
       <div className="spin-wheel-container">
-        <h2>Daily Spin Wheel</h2>
-        <p className="spin-instructions">Spin the wheel once daily to win KSh 10 - KSh 2,000!</p>
+        
         
         {timeUntilNextSpin && timeUntilNextSpin > 0 ? (
           <div className="next-spin-timer">
+            <h2>Daily Spin Wheel</h2>
+            <p className="spin-instructions">Spin the wheel once daily to win KSh 10 - KSh 2,000!</p>
             <h3>Next spin available in</h3>
             <div className="countdown-timer">{formatTimeLeft(timeUntilNextSpin)}</div>
             
@@ -427,6 +428,8 @@ const Dashboard = () => {
           </div>
         ) : (
           <div className="spin-wheel-section">
+            <h2>Daily Spin Wheel</h2>
+            <p className="spin-instructions">Spin the wheel once daily to win KSh 10 - KSh 2,000!</p>
             <div className="wheel-container">
               <Wheel
                 mustStartSpinning={mustSpin}
