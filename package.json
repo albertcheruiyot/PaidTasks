@@ -8,6 +8,7 @@
     "cra-template-pwa-typescript": "2.0.0",
     "firebase": "^11.7.3",
     "framer-motion": "^12.11.3",
+    "intasend-inlinejs-sdk": "^4.0.7",
     "react": "^18.2.0",
     "react-custom-roulette": "^1.4.1",
     "react-dom": "^18.2.0",

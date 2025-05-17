@@ -1,9 +1,10 @@
-// src/components/layout/Footer.js
+// src/components/layout/Footer.js - Updated version
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import AppLogo from '../common/AppLogo'; // Import the AppLogo component
 import './Footer.css';
-import PwaInstallModal from './PwaInstallModal'; // We'll create this component
+import PwaInstallModal from './PwaInstallModal';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -21,9 +22,9 @@ const Footer = () => {
       
       <div className="footer-content">
         <div className="footer-primary">
+          {/* Replace old logo with AppLogo component */}
           <Link to="/" className="footer-logo">
-            <span className="footer-logo-icon">💸</span>
-            PaidTasks
+            <AppLogo size="large" linkToHome={false} />
           </Link>
           <p className="footer-text">
             PaidTasks is your gateway to earning real money through simple online tasks. 

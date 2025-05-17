@@ -1,8 +1,9 @@
-// Modify src/components/layout/Header.js
+// src/components/layout/Header.js - Updated version
 
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import AppLogo from '../common/AppLogo'; // Import the AppLogo component
 import ConfirmationDialog from './ConfirmationDialog';
 
 import './Header.css';
@@ -56,9 +57,8 @@ const Header = () => {
     <header className="header">
       <div className="container">
         <div className="header-container">
-          <Link to="/" className="logo">
-            <span role="img" aria-label="money">💸</span> PaidTasks
-          </Link>
+          {/* Replace the old logo with the AppLogo component */}
+          <AppLogo size="medium" />
           
           {/* Desktop Navigation */}
           <nav className="desktop-nav">
