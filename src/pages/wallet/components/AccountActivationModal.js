@@ -24,9 +24,9 @@ const AccountActivationModal = ({ onActivate, onClose, loading }) => {
     if (!paymentInitialized && !loading) {
       try {
         const intaSend = new window.IntaSend({
-          // Your live production API key from IntaSend dashboard
-          publicAPIKey: "YOUR_LIVE_PUBLIC_KEY", 
-          live: true // Using live production environment
+          // IMPORTANT: Your live production key
+          publicAPIKey: "ISPubKey_live_d4a72af2-73d6-40c2-92e8-083cf04c87c6", // Replace with your actual production key
+          live: true // Always true for production
         });
 
         // Handle payment events
@@ -38,7 +38,6 @@ const AccountActivationModal = ({ onActivate, onClose, loading }) => {
               setTransactionId(results.tracking_id);
             }
             // Keep payment processing true until activation completes
-            // onActivate will set loading to true, which signals the main process
             onActivate(results);
           })
           .on("FAILED", (results) => {
