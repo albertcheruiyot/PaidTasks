@@ -311,3 +311,34 @@
     margin-right: var(--space-2);
     vertical-align: middle;
   }
+
+  /* src/pages/wallet/Wallet.css - Add or update these styles for trust badge */
+
+.wallet-trust-badge {
+  margin: 30px auto;
+  max-width: 375px;
+}
+
+.intasend-trust-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.intasend-trust-badge img {
+  max-width: 375px;
+  width: 100%;
+  height: auto;
+  margin-bottom: 8px;
+}
+
+.intasend-security-link {
+  display: block;
+  color: #454545;
+  text-decoration: none;
+  font-size: 0.8em;
+  font-weight: bold;
+  margin-top: 6px;
+}

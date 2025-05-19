@@ -120,14 +120,22 @@ const Wallet = () => {
     setShowWithdrawalForm(true);
   };
   
-  // Handle account activation
-  const handleActivateAccount = async () => {
+  // Handle account activation with payment
+  const handleActivateAccount = async (paymentResult) => {
     try {
       setLoading(true);
       
-      // Call the activation function that handles all the logic
-      // Including rewarding referrer if applicable
-      const success = await activateUserAccount(currentUser.uid);
+      // Store payment details along with the activation
+      const activationData = {
+        paymentId: paymentResult?.tracking_id || null,
+        paymentAmount: 300, // KES
+        paymentMethod: paymentResult?.payment_method || 'unknown',
+        paymentStatus: 'completed',
+        paymentTimestamp: serverTimestamp()
+      };
+      
+      // Call the activation function with payment data
+      const success = await activateUserAccountWithPayment(currentUser.uid, activationData);
       
       if (success) {
         // Update local state to reflect changes
@@ -135,7 +143,7 @@ const Wallet = () => {
         
         showNotification({ 
           type: 'success', 
-          message: 'Your account has been activated successfully!' 
+          message: 'Your freelance merchant account has been activated successfully!' 
         });
         
         // Close the modal
@@ -145,42 +153,51 @@ const Wallet = () => {
         if (userData?.referralStats?.activatedReferrals < REQUIRED_REFERRALS) {
           setShowReferralModal(true);
         } else if (userData?.availableBalance < MIN_WITHDRAWAL_AMOUNT) {
-          // Only show balance requirement after referrals are met
           setShowMinBalanceModal(true);
         } else {
           setShowWithdrawalForm(true);
         }
       } else {
-        throw new Error("Account activation failed");
+        throw new Error("Merchant account activation failed");
       }
     } catch (err) {
       console.error('Error activating account:', err);
       showNotification({ 
         type: 'error', 
-        message: 'Failed to activate account. Please try again.' 
+        message: 'Failed to activate merchant account. Please try again.' 
       });
     } finally {
       setLoading(false);
     }
   };
   
-  // Account activation logic - optimized to use a batch write
-  const activateUserAccount = async (uid) => {
+  // Updated account activation logic with payment tracking
+  const activateUserAccountWithPayment = async (uid, paymentData) => {
     try {
       // Use a batch for all operations to ensure atomicity and reduce write operations
       const batch = writeBatch(db);
       
-      // Update user document
+      // Get user document first to check referrer
       const userRef = doc(db, 'users', uid);
+      const userDoc = await getDoc(userRef);
       
+      if (!userDoc.exists()) {
+        return false;
+      }
+      
+      const userData = userDoc.data();
+      
+      // Update user document
       logFirestoreOperation('BATCH WRITE', `users/${uid}`, {
         isAccountActivated: true,
-        accountActivatedAt: 'serverTimestamp()'
+        accountActivatedAt: 'serverTimestamp()',
+        activationPayment: paymentData
       });
       
       batch.update(userRef, {
         isAccountActivated: true,
-        accountActivatedAt: serverTimestamp()
+        accountActivatedAt: serverTimestamp(),
+        activationPayment: paymentData
       });
       
       // If user was referred, reward the referrer
@@ -219,13 +236,35 @@ const Wallet = () => {
         });
       }
       
+      // Add a payment record to transaction history
+      const transactionId = paymentData.paymentId || `activation_${Date.now()}`;
+      const transactionRef = doc(db, 'users', uid, 'transactions', transactionId);
+      
+      logFirestoreOperation('BATCH WRITE', `users/${uid}/transactions/${transactionId}`, {
+        type: 'account_activation',
+        amount: paymentData.paymentAmount,
+        timestamp: serverTimestamp(),
+        status: 'completed',
+        method: paymentData.paymentMethod,
+        description: 'Freelance merchant account activation payment'
+      });
+      
+      batch.set(transactionRef, {
+        type: 'account_activation',
+        amount: paymentData.paymentAmount,
+        timestamp: serverTimestamp(),
+        status: 'completed',
+        method: paymentData.paymentMethod,
+        description: 'Freelance merchant account activation payment'
+      });
+      
       // Commit the batch - uses only 1 write operation for multiple documents
       logFirestoreOperation('BATCH COMMIT', 'Multiple documents', 'Committing batch write');
       await batch.commit();
       
       return true;
     } catch (error) {
-      console.error("Error activating account:", error);
+      console.error("Error activating merchant account:", error);
       return false;
     }
   };
@@ -344,6 +383,28 @@ const Wallet = () => {
       {/* Withdrawal history section */}
       <WithdrawalHistory history={withdrawalHistory} />
       
+      {/* IntaSend Trust Badge for Wallet page */}
+      <div className="intasend-trust-badge wallet-trust-badge">
+        <a 
+          href="https://intasend.com/security" 
+          target="_blank" 
+          rel="noopener noreferrer"
+        >
+          <img 
+            src="https://intasend-prod-static.s3.amazonaws.com/img/trust-badges/intasend-trust-badge-with-mpesa-hr-light.png" 
+            alt="IntaSend Secure Payments (PCI-DSS Compliant)" 
+          />
+        </a>
+        <a 
+          className="intasend-security-link" 
+          href="https://intasend.com/security" 
+          target="_blank" 
+          rel="noopener noreferrer"
+        >
+          Secured by IntaSend Payments
+        </a>
+      </div>
+      
       {/* Modals */}
       {showActivationModal && (
         <AccountActivationModal 
@@ -360,7 +421,6 @@ const Wallet = () => {
           activatedReferrals={userData?.referralStats?.activatedReferrals || 0}
           requiredReferrals={REQUIRED_REFERRALS}
           onClose={() => setShowReferralModal(false)}
-          // Removed onProceed prop
         />
       )}
       
@@ -369,7 +429,6 @@ const Wallet = () => {
           currentBalance={userData?.availableBalance || 0}
           minAmount={MIN_WITHDRAWAL_AMOUNT}
           onClose={() => setShowMinBalanceModal(false)}
-          // Removed onProceed prop
         />
       )}
       
@@ -378,6 +437,7 @@ const Wallet = () => {
         <h3>Withdrawal Information</h3>
         <ul>
           <li>Minimum withdrawal transaction: KSh {MIN_TRANSACTION_AMOUNT}</li>
+          <li>One-time freelance merchant account activation fee: KSh 300</li>
           {!userData?.isAccountActivated ? null : (
             <li>{REQUIRED_REFERRALS} activated referrals required for withdrawals</li>
           )}

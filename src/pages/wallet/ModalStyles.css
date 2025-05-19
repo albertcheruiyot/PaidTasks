@@ -41,6 +41,23 @@
   box-shadow: var(--shadow-xl);
 }
 
+/* Add processing overlay effect */
+.modal-content.is-processing {
+  position: relative;
+}
+
+.modal-content.is-processing::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  pointer-events: none;
+}
+
 .modal-close {
   position: absolute;
   top: 1rem;
@@ -72,12 +89,16 @@
 .modal-content h2 {
   margin-bottom: var(--space-3);
   text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
 }
 
 .modal-content p {
   color: var(--color-text-secondary);
   margin-bottom: var(--space-4);
   text-align: center;
+  line-height: 1.5;
 }
 
 .modal-actions {
@@ -92,6 +113,36 @@
     flex-direction: row;
     justify-content: center;
   }
+}
+
+/* IntaSend Trust Badge Styles */
+.intasend-trust-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.intasend-trust-badge img {
+  max-width: 375px;
+  width: 100%;
+  height: auto;
+  margin-bottom: 8px;
+}
+
+.intasend-security-link {
+  display: block;
+  color: #454545;
+  text-decoration: none;
+  font-size: 0.8em;
+  font-weight: bold;
+  margin-top: 6px;
+}
+
+.wallet-trust-badge {
+  margin: 30px auto;
+  max-width: 375px;
 }
 
 /* Activation Modal Specific Styles */
@@ -115,12 +166,59 @@
 .activation-modal .benefit-icon {
   margin-right: var(--space-3);
   font-size: 1.25rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.activation-modal .benefit-text {
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
 }
 
 .activation-modal .btn-activation {
   background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
   padding: var(--space-3) var(--space-6);
   font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px; /* Prevents button size from changing */
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.activation-modal .btn-activation:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.activation-modal .btn-activation:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+/* Spinner for loading states */
+.spinner-sm {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Referral Modal Specific Styles */
@@ -374,6 +472,7 @@
 .success-content h4 {
   margin-bottom: var(--space-1);
   color: var(--color-success);
+  font-weight: 600;
 }
 
 .success-content p {
@@ -410,6 +509,7 @@
 .error-content {
   color: var(--color-error);
   margin-bottom: 0;
+  font-size: 0.9rem;
 }
 
 /* Withdrawal terms */
@@ -427,25 +527,6 @@
   text-align: left;
 }
 
-/* Small spinner for buttons */
-.spinner-sm {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: white;
-  animation: spin 1s ease-in-out infinite;
-  margin-right: var(--space-2);
-  vertical-align: middle;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .modal-content {
@@ -458,7 +539,7 @@
   }
   
   .modal-content h2 {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
   }
   
   .referral-modal .share-buttons {
