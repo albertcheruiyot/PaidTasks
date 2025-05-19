@@ -2,19 +2,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  doc, 
-  getDoc, 
-  updateDoc, 
   collection, 
-  addDoc, 
   getDocs, 
   query, 
   where, 
   orderBy, 
   limit,
-  serverTimestamp,
-  writeBatch,
-  increment
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { useAuth } from '../../context/AuthContext';
@@ -96,7 +89,7 @@ const Wallet = () => {
     fetchWalletData();
   }, [currentUser, userData]);
   
-  // Handle withdrawal button click
+  // Handle withdrawal button click - cloud function handles the actual activation now
   const handleWithdrawalClick = () => {
     // Step 1: Check account activation
     if (!userData.isAccountActivated) {
@@ -118,155 +111,6 @@ const Wallet = () => {
     
     // All requirements met, show withdrawal form
     setShowWithdrawalForm(true);
-  };
-  
-  // Handle account activation with payment
-  const handleActivateAccount = async (paymentResult) => {
-    try {
-      setLoading(true);
-      
-      // Store payment details along with the activation
-      const activationData = {
-        paymentId: paymentResult?.tracking_id || null,
-        paymentAmount: 300, // KES
-        paymentMethod: paymentResult?.payment_method || 'unknown',
-        paymentStatus: 'completed',
-        paymentTimestamp: serverTimestamp()
-      };
-      
-      // Call the activation function with payment data
-      const success = await activateUserAccountWithPayment(currentUser.uid, activationData);
-      
-      if (success) {
-        // Update local state to reflect changes
-        await refreshUserData();
-        
-        showNotification({ 
-          type: 'success', 
-          message: 'Your freelance merchant account has been activated successfully!' 
-        });
-        
-        // Close the modal
-        setShowActivationModal(false);
-        
-        // Next, check referrals
-        if (userData?.referralStats?.activatedReferrals < REQUIRED_REFERRALS) {
-          setShowReferralModal(true);
-        } else if (userData?.availableBalance < MIN_WITHDRAWAL_AMOUNT) {
-          setShowMinBalanceModal(true);
-        } else {
-          setShowWithdrawalForm(true);
-        }
-      } else {
-        throw new Error("Merchant account activation failed");
-      }
-    } catch (err) {
-      console.error('Error activating account:', err);
-      showNotification({ 
-        type: 'error', 
-        message: 'Failed to activate merchant account. Please try again.' 
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  // Updated account activation logic with payment tracking
-  const activateUserAccountWithPayment = async (uid, paymentData) => {
-    try {
-      // Use a batch for all operations to ensure atomicity and reduce write operations
-      const batch = writeBatch(db);
-      
-      // Get user document first to check referrer
-      const userRef = doc(db, 'users', uid);
-      const userDoc = await getDoc(userRef);
-      
-      if (!userDoc.exists()) {
-        return false;
-      }
-      
-      const userData = userDoc.data();
-      
-      // Update user document
-      logFirestoreOperation('BATCH WRITE', `users/${uid}`, {
-        isAccountActivated: true,
-        accountActivatedAt: 'serverTimestamp()',
-        activationPayment: paymentData
-      });
-      
-      batch.update(userRef, {
-        isAccountActivated: true,
-        accountActivatedAt: serverTimestamp(),
-        activationPayment: paymentData
-      });
-      
-      // If user was referred, reward the referrer
-      if (userData.referredBy) {
-        const referrerUid = userData.referredBy;
-        const referralReward = 200; // KSh 200 reward
-        
-        // Update referrer document
-        const referrerRef = doc(db, 'users', referrerUid);
-        
-        logFirestoreOperation('BATCH WRITE', `users/${referrerUid}`, {
-          'referralStats.activatedReferrals': 'increment(1)',
-          availableBalance: `increment(${referralReward})`,
-          totalEarnings: `increment(${referralReward})`
-        });
-        
-        batch.update(referrerRef, {
-          'referralStats.activatedReferrals': increment(1),
-          availableBalance: increment(referralReward),
-          totalEarnings: increment(referralReward)
-        });
-        
-        // Update referral record in subcollection
-        const referralRef = doc(db, 'users', referrerUid, 'referrals', uid);
-        
-        logFirestoreOperation('BATCH WRITE', `users/${referrerUid}/referrals/${uid}`, {
-          activated: true,
-          activatedAt: 'serverTimestamp()',
-          reward: referralReward
-        });
-        
-        batch.update(referralRef, {
-          activated: true,
-          activatedAt: serverTimestamp(),
-          reward: referralReward
-        });
-      }
-      
-      // Add a payment record to transaction history
-      const transactionId = paymentData.paymentId || `activation_${Date.now()}`;
-      const transactionRef = doc(db, 'users', uid, 'transactions', transactionId);
-      
-      logFirestoreOperation('BATCH WRITE', `users/${uid}/transactions/${transactionId}`, {
-        type: 'account_activation',
-        amount: paymentData.paymentAmount,
-        timestamp: serverTimestamp(),
-        status: 'completed',
-        method: paymentData.paymentMethod,
-        description: 'Freelance merchant account activation payment'
-      });
-      
-      batch.set(transactionRef, {
-        type: 'account_activation',
-        amount: paymentData.paymentAmount,
-        timestamp: serverTimestamp(),
-        status: 'completed',
-        method: paymentData.paymentMethod,
-        description: 'Freelance merchant account activation payment'
-      });
-      
-      // Commit the batch - uses only 1 write operation for multiple documents
-      logFirestoreOperation('BATCH COMMIT', 'Multiple documents', 'Committing batch write');
-      await batch.commit();
-      
-      return true;
-    } catch (error) {
-      console.error("Error activating merchant account:", error);
-      return false;
-    }
   };
   
   // Formatter for currency display
@@ -408,8 +252,10 @@ const Wallet = () => {
       {/* Modals */}
       {showActivationModal && (
         <AccountActivationModal 
-          onActivate={handleActivateAccount}
-          onClose={() => setShowActivationModal(false)}
+          onClose={() => {
+            setShowActivationModal(false);
+            refreshUserData(); // Refresh user data when modal is closed
+          }}
           loading={loading}
         />
       )}

@@ -1,0 +1,36 @@
+[debug] [2025-05-19T17:24:01.922Z] ----------------------------------------------------------------------
+[debug] [2025-05-19T17:24:01.924Z] Command:       /home/alpha/.nvm/versions/node/v22.15.0/bin/node /home/alpha/.nvm/versions/node/v22.15.0/bin/firebase deploy --only hosting
+[debug] [2025-05-19T17:24:01.924Z] CLI Version:   14.4.0
+[debug] [2025-05-19T17:24:01.924Z] Platform:      linux
+[debug] [2025-05-19T17:24:01.924Z] Node Version:  v22.15.0
+[debug] [2025-05-19T17:24:01.925Z] Time:          Mon May 19 2025 20:24:01 GMT+0300 (East Africa Time)
+[debug] [2025-05-19T17:24:01.925Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-05-19T17:24:02.130Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-05-19T17:24:02.130Z] > authorizing via signed-in user (bettalbert99@gmail.com)
+[debug] [2025-05-19T17:24:02.130Z] [iam] checking project paidtasksversiontwo for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2025-05-19T17:24:02.131Z] Checked if tokens are valid: false, expires at: 1747676116596
+[debug] [2025-05-19T17:24:02.131Z] Checked if tokens are valid: false, expires at: 1747676116596
+[debug] [2025-05-19T17:24:02.131Z] > refreshing access token with scopes: []
+[debug] [2025-05-19T17:24:02.133Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-05-19T17:24:02.133Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-05-19T17:24:02.555Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-05-19T17:24:02.555Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-05-19T17:24:02.560Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/paidtasksversiontwo:testIamPermissions [none]
+[debug] [2025-05-19T17:24:02.560Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/paidtasksversiontwo:testIamPermissions x-goog-quota-user=projects/paidtasksversiontwo
+[debug] [2025-05-19T17:24:02.560Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/paidtasksversiontwo:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-05-19T17:24:04.291Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/paidtasksversiontwo:testIamPermissions 200
+[debug] [2025-05-19T17:24:04.291Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/paidtasksversiontwo:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-05-19T17:24:04.292Z] Checked if tokens are valid: true, expires at: 1747679041555
+[debug] [2025-05-19T17:24:04.292Z] Checked if tokens are valid: true, expires at: 1747679041555
+[debug] [2025-05-19T17:24:04.292Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/paidtasksversiontwo [none]
+[debug] [2025-05-19T17:24:05.011Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/paidtasksversiontwo 200
+[debug] [2025-05-19T17:24:05.011Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/paidtasksversiontwo {"projectId":"paidtasksversiontwo","projectNumber":"1063979702753","displayName":"PaidTasksVersionTwo","name":"projects/paidtasksversiontwo","resources":{"hostingSite":"paidtasksversiontwo"},"state":"ACTIVE","etag":"1_646ba9da-52b4-4451-929b-74281797e8d6"}
+[info] 
+[info] === Deploying to 'paidtasksversiontwo'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2025-05-19T17:24:05.015Z] Checked if tokens are valid: true, expires at: 1747679041555
+[debug] [2025-05-19T17:24:05.015Z] Checked if tokens are valid: true, expires at: 1747679041555
+[debug] [2025-05-19T17:24:05.015Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/paidtasksversiontwo/versions [none]
+[debug] [2025-05-19T17:24:05.015Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/paidtasksversiontwo/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}

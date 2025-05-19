@@ -221,6 +221,586 @@
   }
 }
 
+/* Referral Modal Specific Styles */
+.referral-modal .referral-progress {
+  margin-bottom: var(--space-4);
+}
+
+.referral-modal .progress-text {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.referral-modal .progress-bar {
+  height: 8px;
+  background-color: var(--color-background);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: var(--space-2);
+}
+
+.referral-modal .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease;
+}
+
+.referral-modal .referrals-needed {
+  text-align: center;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+  margin-top: var(--space-1);
+}
+
+.referral-modal .referral-link-container {
+  display: flex;
+  margin-bottom: var(--space-3);
+}
+
+.referral-modal .referral-link-input {
+  flex: 1;
+  padding: var(--space-3);
+  border: 1px solid var(--color-text-light);
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  font-size: 0.9rem;
+}
+
+.referral-modal .referral-link-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.referral-modal .referral-code {
+  text-align: center;
+  margin-bottom: var(--space-4);
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.referral-modal .share-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+  margin-bottom: var(--space-4);
+}
+
+.referral-modal .share-btn {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+}
+
+.referral-modal .share-icon {
+  margin-right: var(--space-2);
+}
+
+.referral-modal .whatsapp-btn {
+  background-color: #25D366;
+  color: white;
+}
+
+.referral-modal .facebook-btn {
+  background-color: #1877F2;
+  color: white;
+}
+
+.referral-modal .twitter-btn {
+  background-color: #1DA1F2;
+  color: white;
+}
+
+.referral-tips {
+  background-color: var(--color-background);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  margin: var(--space-4) 0;
+}
+
+.referral-tips h4 {
+  font-size: 0.95rem;
+  margin-bottom: var(--space-2);
+}
+
+.referral-tips ul {
+  padding-left: var(--space-4);
+  margin: 0;
+}
+
+.referral-tips li {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.referral-tips li:last-child {
+  margin-bottom: 0;
+}
+
+/* Balance Modal Specific Styles */
+.balance-modal .balance-progress {
+  margin-bottom: var(--space-4);
+}
+
+.balance-modal .progress-text {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.balance-modal .progress-bar {
+  height: 8px;
+  background-color: var(--color-background);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: var(--space-2);
+}
+
+.balance-modal .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease;
+}
+
+.balance-modal .amount-needed {
+  text-align: center;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+  margin-top: var(--space-1);
+}
+
+.balance-modal .earning-options {
+  background-color: var(--color-background);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.balance-modal .earning-options h3 {
+  font-size: 1rem;
+  margin-bottom: var(--space-3);
+  text-align: center;
+}
+
+.balance-modal .earning-option {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-3);
+  background-color: var(--color-card);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.balance-modal .earning-option:last-child {
+  margin-bottom: 0;
+}
+
+.balance-modal .earning-icon {
+  margin-right: var(--space-3);
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-background);
+  border-radius: 50%;
+}
+
+.balance-modal .earning-details {
+  flex: 1;
+}
+
+.balance-modal .earning-details h4 {
+  font-size: 0.95rem;
+  margin-bottom: var(--space-1);
+}
+
+.balance-modal .earning-details p {
+  font-size: 0.85rem;
+  margin-bottom: 0;
+  text-align: left;
+}
+
+.balance-modal .btn-sm {
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.85rem;
+}
+
+/* Form helper texts */
+.form-helper-text {
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+/* Success message */
+.success-message {
+  display: flex;
+  align-items: flex-start;
+  background-color: rgba(16, 185, 129, 0.1);
+  border-left: 4px solid var(--color-success);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+}
+
+.success-icon {
+  background-color: var(--color-success);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--space-3);
+  flex-shrink: 0;
+}
+
+.success-content h4 {
+  margin-bottom: var(--space-1);
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.success-content p {
+  color: var(--color-text-secondary);
+  margin-bottom: 0;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+/* Error message */
+.error-message {
+  display: flex;
+  align-items: flex-start;
+  background-color: rgba(239, 68, 68, 0.1);
+  border-left: 4px solid var(--color-error);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+}
+
+.error-icon {
+  background-color: var(--color-error);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--space-3);
+  flex-shrink: 0;
+}
+
+.error-content {
+  color: var(--color-error);
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+
+/* Withdrawal terms */
+.withdrawal-terms {
+  background-color: var(--color-background);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+}
+
+.withdrawal-terms p {
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 0;
+  text-align: left;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .modal-content {
+    padding: var(--space-4);
+  }
+  
+  .modal-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--space-3);
+  }
+  
+  .modal-content h2 {
+    font-size: 1.3rem;
+  }
+  
+  .referral-modal .share-buttons {
+    flex-direction: column;
+  }
+  
+  .referral-modal .share-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .balance-modal .earning-option {
+    flex-wrap: wrap;
+  }
+  
+  .balance-modal .earning-icon {
+    margin-bottom: var(--space-2);
+  }
+  
+  .balance-modal .btn-sm {
+    width: 100%;
+    margin-top: var(--space-2);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* src/pages/wallet/ModalStyles.css */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-container {
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modal-appear 0.3s ease-out;
+}
+
+@keyframes modal-appear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-content {
+  background-color: var(--color-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  position: relative;
+  box-shadow: var(--shadow-xl);
+}
+
+/* Add processing overlay effect */
+.modal-content.is-processing {
+  position: relative;
+}
+
+.modal-content.is-processing::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  pointer-events: none;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: var(--color-background);
+  transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+  background-color: var(--color-text-light);
+  color: white;
+}
+
+.modal-icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-4);
+  display: flex;
+  justify-content: center;
+}
+
+.modal-content h2 {
+  margin-bottom: var(--space-3);
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.modal-content p {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+@media (min-width: 480px) {
+  .modal-actions {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+/* IntaSend Trust Badge Styles */
+.intasend-trust-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.intasend-trust-badge img {
+  max-width: 375px;
+  width: 100%;
+  height: auto;
+  margin-bottom: 8px;
+}
+
+.intasend-security-link {
+  display: block;
+  color: #454545;
+  text-decoration: none;
+  font-size: 0.8em;
+  font-weight: bold;
+  margin-top: 6px;
+}
+
+.wallet-trust-badge {
+  margin: 30px auto;
+  max-width: 375px;
+}
+
+/* Activation Modal Specific Styles */
+.activation-modal .activation-benefits {
+  background-color: var(--color-background);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.activation-modal .benefit-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.activation-modal .benefit-item:last-child {
+  margin-bottom: 0;
+}
+
+.activation-modal .benefit-icon {
+  margin-right: var(--space-3);
+  font-size: 1.25rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.activation-modal .benefit-text {
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+}
+
+.activation-modal .btn-activation {
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  padding: var(--space-3) var(--space-6);
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px; /* Prevents button size from changing */
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.activation-modal .btn-activation:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.activation-modal .btn-activation:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+/* Spinner for loading states */
+.spinner-sm {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Success message */
 .success-message {
   display: flex;
