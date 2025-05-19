@@ -6,7 +6,8 @@ import {
   addDoc, 
   updateDoc, 
   collection, 
-  serverTimestamp 
+  serverTimestamp,
+  increment  // Import the increment function
 } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
 import { useAuth } from '../../../context/AuthContext';
@@ -127,12 +128,12 @@ const WithdrawalForm = ({
       // Log the operation
       logFirestoreOperation('UPDATE', `users/${userId}`, {
         availableBalance: availableBalance - amountValue,
-        totalWithdrawn: availableBalance
+        totalWithdrawn: increment(amountValue)  // FIX: Use increment() to add to the existing value
       });
       
       await updateDoc(userDocRef, {
         availableBalance: availableBalance - amountValue,
-        totalWithdrawn: availableBalance
+        totalWithdrawn: increment(amountValue)  // FIX: Use increment() to add to the existing value
       });
       
       // 3. Update local state
@@ -264,4 +265,4 @@ const WithdrawalForm = ({
   );
 };
 
-export default WithdrawalForm;
+export default WithdrawalForm;//2025-05-19T19:11:04.878929Z ? handleintasendpayment: Logged failed payment for analysis: Y3MVQ66

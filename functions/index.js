@@ -212,6 +212,24 @@ async function activateUserAccount(userId, paymentData) {
       return true;
     }
 
+    // Save referral data outside the transaction
+    const referrerId = userData.referredBy;
+    let referrerDoc = null;
+    let referralDoc = null;
+
+    // Perform all reads BEFORE starting the transaction
+    if (referrerId) {
+      console.log(`Checking referrer data for ${referrerId}`);
+      const referrerRef = db.collection("users").doc(referrerId);
+      referrerDoc = await referrerRef.get();
+
+      if (referrerDoc.exists) {
+        const referralRef = db.collection("users").doc(referrerId)
+          .collection("referrals").doc(userId);
+        referralDoc = await referralRef.get();
+      }
+    }
+
     // Use a transaction to ensure data consistency
     return await db.runTransaction(async (transaction) => {
       // Update user's activation status
@@ -245,61 +263,54 @@ async function activateUserAccount(userId, paymentData) {
 
       console.log(`Transaction record created for ${userId}`);
 
-      // Process referral reward if user was referred
-      if (userData.referredBy) {
-        const referrerId = userData.referredBy;
+      // Process referral reward if user was referred and we have valid referrer data
+      if (referrerId && referrerDoc && referrerDoc.exists) {
         console.log(`Processing referral reward for referrer ${referrerId}`);
 
         const referrerRef = db.collection("users").doc(referrerId);
 
-        // Check if referrer exists
-        const referrerDoc = await transaction.get(referrerRef);
-        if (!referrerDoc.exists) {
-          console.error(`Referrer ${referrerId} not found`);
-        } else {
-          // Update referrer document
-          transaction.update(referrerRef, {
-            "referralStats.activatedReferrals": admin.firestore.FieldValue.increment(1),
-            "availableBalance": admin.firestore.FieldValue.increment(REFERRAL_REWARD),
-            "totalEarnings": admin.firestore.FieldValue.increment(REFERRAL_REWARD),
-          });
+        // Update referrer document
+        transaction.update(referrerRef, {
+          "referralStats.activatedReferrals": admin.firestore.FieldValue.increment(1),
+          "availableBalance": admin.firestore.FieldValue.increment(REFERRAL_REWARD),
+          "totalEarnings": admin.firestore.FieldValue.increment(REFERRAL_REWARD),
+        });
 
-          console.log(`Referrer ${referrerId} stats updated`);
+        console.log(`Referrer ${referrerId} stats updated`);
 
-          // Update referral record in subcollection
+        // Update referral record in subcollection if it exists
+        if (referralDoc && referralDoc.exists) {
           const referralRef = db.collection("users").doc(referrerId)
             .collection("referrals").doc(userId);
 
-          // Check if referral record exists before updating
-          const referralDoc = await transaction.get(referralRef);
-          if (referralDoc.exists) {
-            transaction.update(referralRef, {
-              "activated": true,
-              "activatedAt": admin.firestore.FieldValue.serverTimestamp(),
-              "reward": REFERRAL_REWARD,
-            });
+          transaction.update(referralRef, {
+            "activated": true,
+            "activatedAt": admin.firestore.FieldValue.serverTimestamp(),
+            "reward": REFERRAL_REWARD,
+          });
 
-            console.log(`Referral record updated for ${userId} in referrer ${referrerId}`);
+          console.log(`Referral record updated for ${userId} in referrer ${referrerId}`);
 
-            // Add reward transaction record
-            const rewardTransactionId = `ref_reward_${userId}`;
-            const rewardTransactionRef = db.collection("users").doc(referrerId)
-              .collection("transactions").doc(rewardTransactionId);
+          // Add reward transaction record
+          const rewardTransactionId = `ref_reward_${userId}`;
+          const rewardTransactionRef = db.collection("users").doc(referrerId)
+            .collection("transactions").doc(rewardTransactionId);
 
-            transaction.set(rewardTransactionRef, {
-              "type": "referral_reward",
-              "amount": REFERRAL_REWARD,
-              "timestamp": admin.firestore.FieldValue.serverTimestamp(),
-              "description": `Referral reward for ${userData.displayName || "a user"}`,
-              "status": "completed",
-              "referredUserId": userId,
-            });
+          transaction.set(rewardTransactionRef, {
+            "type": "referral_reward",
+            "amount": REFERRAL_REWARD,
+            "timestamp": admin.firestore.FieldValue.serverTimestamp(),
+            "description": `Referral reward for ${userData.displayName || "a user"}`,
+            "status": "completed",
+            "referredUserId": userId,
+          });
 
-            console.log(`Referral reward transaction created for ${referrerId}`);
-          } else {
-            console.log(`Referral record not found for ${userId} in referrer ${referrerId}`);
-          }
+          console.log(`Referral reward transaction created for ${referrerId}`);
+        } else {
+          console.log(`Referral record not found for ${userId} in referrer ${referrerId}`);
         }
+      } else if (referrerId) {
+        console.log(`Referrer ${referrerId} not found or invalid`);
       } else {
         console.log(`User ${userId} was not referred by anyone`);
       }
