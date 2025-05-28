@@ -6,6 +6,13 @@ import { db } from '../../config/firebase';
 import { useAuth } from '../../context/AuthContext';
 import './Referral.css';
 
+import { 
+  AdsteraBanner, 
+  AdsteraNativeBanner, 
+  AdsteraSocial, 
+  AdsteraPopunder 
+} from '../../components/ads';
+
 const Referral = () => {
   const { currentUser } = useAuth();
   const [userData, setUserData] = useState(null);
@@ -241,6 +248,10 @@ const Referral = () => {
           <li>Your referral also gets a signup bonus!</li>
         </ul>
       </div>
+      <AdsteraBanner />
+      <AdsteraNativeBanner />
+      <AdsteraSocial />
+      <AdsteraPopunder />
     </div>
   );
 };

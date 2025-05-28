@@ -18,6 +18,13 @@ import WithdrawalForm from './components/WithdrawalForm';
 import WithdrawalHistory from './components/WithdrawalHistory';
 import './Wallet.css';
 
+import { 
+  AdsteraBanner, 
+  AdsteraNativeBanner, 
+  AdsteraSocial, 
+  AdsteraPopunder 
+} from '../../components/ads';
+
 // Helper to log Firestore operations
 const logFirestoreOperation = (operation, path, data = null) => {
   console.log(`Firestore ${operation}:`, path, data ? data : '');
@@ -294,6 +301,10 @@ const Wallet = () => {
           <li>Funds are sent directly to your M-Pesa account</li>
         </ul>
       </div>
+      <AdsteraBanner />
+      <AdsteraNativeBanner />
+      <AdsteraSocial />
+      <AdsteraPopunder />
     </div>
   );
 };

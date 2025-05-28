@@ -1,0 +1,27 @@
+/* src/components/ads/AdsteraAds.css */
+
+.adstera-banner-container,
+.adstera-native-banner-container,
+.adstera-social-ads-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: var(--space-4) 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.adstera-banner-container iframe,
+.adstera-native-banner-container iframe {
+  max-width: 100%;
+  border: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .adstera-banner-container iframe,
+  .adstera-native-banner-container iframe {
+    width: 100% !important;
+    height: auto !important;
+  }
+}

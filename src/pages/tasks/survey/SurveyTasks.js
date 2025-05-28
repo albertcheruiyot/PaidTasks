@@ -7,6 +7,13 @@ import { useAuth } from '../../../context/AuthContext';
 import surveyData from './surveyData';
 import './SurveyTasks.css';
 
+import { 
+  AdsteraBanner, 
+  AdsteraNativeBanner, 
+  AdsteraSocial, 
+  AdsteraPopunder 
+} from '../../../components/ads';
+
 const SurveyTasks = () => {
   const { currentUser, userData, refreshUserData, showNotification } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -630,6 +637,10 @@ const SurveyTasks = () => {
           </li>
         </ul>
       </div>
+      <AdsteraBanner />
+      <AdsteraNativeBanner />
+      <AdsteraSocial />
+      <AdsteraPopunder />
     </div>
   );
 };

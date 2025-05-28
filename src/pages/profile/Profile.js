@@ -7,6 +7,13 @@ import { db } from '../../config/firebase';
 import { useAuth } from '../../context/AuthContext';
 import './Profile.css';
 
+import { 
+  AdsteraBanner, 
+  AdsteraNativeBanner, 
+  AdsteraSocial, 
+  AdsteraPopunder 
+} from '../../components/ads';
+
 const Profile = () => {
   const { currentUser } = useAuth();
   const [userData, setUserData] = useState(null);
@@ -268,6 +275,10 @@ const Profile = () => {
           </div>
         </div>
       </div>
+      <AdsteraBanner />
+      <AdsteraNativeBanner />
+      <AdsteraSocial />
+      <AdsteraPopunder />
     </div>
   );
 };

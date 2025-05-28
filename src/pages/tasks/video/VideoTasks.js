@@ -22,6 +22,13 @@ import SuccessModal from './components/SuccessModal';
 import AddVideoForm from './components/AddVideoForm';
 import './VideoTasks.css';
 
+import { 
+  AdsteraBanner, 
+  AdsteraNativeBanner, 
+  AdsteraSocial, 
+  AdsteraPopunder 
+} from '../../../components/ads';
+
 const VideoTasks = () => {
   const { currentUser, userData, refreshUserData, showNotification } = useAuth();
   const [videoTasks, setVideoTasks] = useState([]);
@@ -419,6 +426,10 @@ const VideoTasks = () => {
           onClose={() => setShowSuccessModal(false)}
         />
       )}
+      <AdsteraBanner />
+      <AdsteraNativeBanner />
+      <AdsteraSocial />
+      <AdsteraPopunder />
     </div>
   );
 };

@@ -16,6 +16,13 @@ import { db } from '../../config/firebase';
 import { useAuth } from '../../context/AuthContext';
 import './Dashboard.css';
 
+import { 
+  AdsteraBanner, 
+  AdsteraNativeBanner, 
+  AdsteraSocial, 
+  AdsteraPopunder 
+} from '../../components/ads';
+
 const Dashboard = () => {
   const { currentUser, userData, refreshUserData, showNotification } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -571,6 +578,10 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+      <AdsteraBanner />
+      <AdsteraNativeBanner />
+      <AdsteraSocial />
+      <AdsteraPopunder />
     </div>
   );
 };
