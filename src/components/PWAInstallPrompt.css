@@ -1,0 +1,123 @@
+/* PWA Install Prompt Styles */
+.pwa-install-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(37, 99, 235, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+  }
+  
+  .pwa-install-modal {
+    background-color: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 350px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: modalAppear 0.4s ease-out;
+  }
+  
+  @keyframes modalAppear {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  .pwa-install-content {
+    padding: 30px;
+    text-align: center;
+  }
+  
+  .pwa-install-icon {
+    font-size: 64px;
+    margin-bottom: 15px;
+    animation: float 2s ease infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  .pwa-install-modal h2 {
+    font-size: 1.5rem;
+    color: #2563EB;
+    margin-bottom: 10px;
+  }
+  
+  .pwa-install-modal p {
+    color: #4A5568;
+    margin-bottom: 20px;
+    font-size: 1rem;
+  }
+  
+  .pwa-install-btn, .pwa-retry-btn {
+    background: linear-gradient(90deg, #2563EB, #7C3AED);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+  }
+  
+  .pwa-install-btn:hover, .pwa-retry-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 25px rgba(37, 99, 235, 0.4);
+  }
+  
+  .install-retry {
+    background-color: #F7FAFC;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 15px;
+  }
+  
+  .install-retry p {
+    color: #4A5568;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+  }
+  
+  .pwa-retry-btn {
+    background: linear-gradient(90deg, #10B981, #34D399);
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 480px) {
+    .pwa-install-modal {
+      width: 95%;
+      max-width: 95%;
+      margin: 0 10px;
+    }
+  
+    .pwa-install-icon {
+      font-size: 48px;
+    }
+  
+    .pwa-install-modal h2 {
+      font-size: 1.3rem;
+    }
+  
+    .pwa-install-modal p {
+      font-size: 0.9rem;
+    }
+  
+    .install-retry p {
+      font-size: 0.8rem;
+    }
+  }

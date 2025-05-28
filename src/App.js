@@ -8,6 +8,9 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 // Import CSS
 import './styles/global.css';
 
+// Import PWA Install Prompt
+import PWAInstallPrompt from './components/PWAInstallPrompt';
+
 // Layout components
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
@@ -46,6 +49,9 @@ function App() {
     <AuthProvider>
       <Router>
         <div className="app-container">
+
+          {/* PWA Install Prompt */}
+          <PWAInstallPrompt />
           <Header />
           {/* Render global notification component */}
           <GlobalNotification />

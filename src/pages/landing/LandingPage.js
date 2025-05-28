@@ -250,9 +250,9 @@ const LandingPage = () => {
           <div className="download-content">
             <p>Install our web app on your phone for a better experience. Access tasks faster and get notified about new earning opportunities.</p>
             
-            <div className="app-preview">
+            {/*<div className="app-preview">
               <img src="https://via.placeholder.com/300x600" alt="PaidTasks App Preview" />
-            </div>
+            </div>*/}
             
             <div className="app-buttons">
               <Link to="/register" className="app-btn">

@@ -474,7 +474,7 @@ const Register = () => {
               </div>
               <div className="referral-badge">Referral Code: {referralCode}</div>
               <p className="referral-info">
-                Both you and your friend will earn rewards when you complete your first task!
+                Both you and your friend will earn rewards when you activate your account.
               </p>
             </div>
           )}
